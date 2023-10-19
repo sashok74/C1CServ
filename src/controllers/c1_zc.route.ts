@@ -23,7 +23,7 @@ export async function insertC1_ZC(prm: any) {
       { 'response.ЗаказПокупателя.GUIDЗаказаПокупателя': prm.response.ЗаказПокупателя.GUIDЗаказаПокупателя }
     );
     if (uitems === null){
-      const newrec = await db.collection('C1_ZC').insertOne({...prm, 'res.insert_at': today});
+      const newrec = await db.collection('C1_ZC').insertOne({...prm, 'res':{'insert_at': today}});
       console.log('insert record:', newrec);
     }
   } catch (error) {
