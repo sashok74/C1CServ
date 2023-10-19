@@ -18,6 +18,8 @@ export const loadDB = async () => {
         const client = await MongoClient.connect(dbUrl);
         await client.connect();
         db = client.db(base_name);
+        const uitems = await db.collection('log.connections').insertOne({ date: new Date(), username: 'ind' });
+        console.log('db connect:', uitems);
     } catch (err) {
         Sentry.captureException(err);
     }

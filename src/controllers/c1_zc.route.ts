@@ -37,7 +37,7 @@ export async function insertC1_ZC(prm: any) {
         updated_at: prm.updated_at,
       },
     };
-    console.log("listCollections :",db.listCollections({nameOnly: true}).toArray());
+    console.log("listCollections :",db.listCollections().toArray());
     const uitems = await db.collection('C1_ZC').findOneAndUpdate({ _id: prm._id }, updateObj, {
       upsert: true,
       returnDocument: 'after',
