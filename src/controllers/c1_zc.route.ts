@@ -26,7 +26,7 @@ export async function insertC1_ZC(prm: any) {
       prm._id = new ObjectId(prm._id);
       prm.updated_at = new Date();
     }
-    prm.p_id = prm.p_id ? new ObjectId(prm.p_id) : null;
+
     console.log("insertC1_ZC prm:", prm);
     let updateObj = {
       $setOnInsert: {
