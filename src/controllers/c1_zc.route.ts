@@ -18,11 +18,10 @@ export async function allC1_ZC(req: Request, res: Response) {
 export async function insertC1_ZC(prm: any) {
   try {
     const db = await loadDB();
-    console.log('listCollections :', db.listCollections().toArray());
     const uitems = await db.collection('C1_ZC').findOneAndUpdate(
       { 'response.ЗаказПокупателя.GUIDЗаказаПокупателя': prm.response.ЗаказПокупателя.GUIDЗаказаПокупателя },
       {
-        $setOnInsert: { 'res.insert_at': new Date() }, // если документ вставляется
+        $setOnInsert: {...prm, 'res.insert_at': new Date() }, // если документ вставляется
         $set: { 'res.update_at': new Date() }, // если документ обновляется,
       },
       {
