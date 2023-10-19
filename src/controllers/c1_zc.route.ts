@@ -27,7 +27,7 @@ export async function insertC1_ZC(prm: any) {
       prm.updated_at = new Date();
     }
     prm.p_id = prm.p_id ? new ObjectId(prm.p_id) : null;
-
+    console.log("insertC1_ZC prm:", prm);
     let updateObj = {
       $setOnInsert: {
         _id: prm._id,
@@ -37,7 +37,7 @@ export async function insertC1_ZC(prm: any) {
         updated_at: prm.updated_at,
       },
     };
-    console.log(db.listCollections({nameOnly: true}).toArray());
+    console.log("listCollections :",db.listCollections({nameOnly: true}).toArray());
     const uitems = await db.collection('C1_ZC').findOneAndUpdate({ _id: prm._id }, updateObj, {
       upsert: true,
       returnDocument: 'after',

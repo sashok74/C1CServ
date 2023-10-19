@@ -7,7 +7,7 @@ export async function getDoc(uid: string) {
     const doc = await axios.get(`http://192.168.10.183/unf/hs/ht/get_order/${uid}`);
     console.log("axios res:",doc.data);
     //return response.data; // здесь возвращается JSON-ответ
-    insertC1_ZC(doc.data);
+    await insertC1_ZC(doc.data);
     //return getOrderResponse;
 }
 
