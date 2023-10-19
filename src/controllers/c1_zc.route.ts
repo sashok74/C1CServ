@@ -26,6 +26,9 @@ export async function insertC1_ZC(prm: any) {
       const newrec = await db.collection('C1_ZC').insertOne({...prm, 'res':{'insert_at': today}});
       console.log('insert record:', newrec);
     }
+    else{
+      console.log('find record:', uitems);
+    }
   } catch (error) {
     console.log('error:', error);
   }
