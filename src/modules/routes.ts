@@ -23,7 +23,7 @@ routes.post('/C1_ZC', async (req: Request, res: Response) => {
 
 routes.post('/C1_ZC_FILE', async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
-  const DOC  = await getArrayFromFile("../testData/docUID.txt");
+  const DOC  = await getArrayFromFile("/root/node-app/C1CServ/src/testData/docUID.txt");
   if (DOC === undefined) {
     res.send('zero documents retrieved.');
     return;
