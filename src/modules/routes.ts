@@ -22,8 +22,8 @@ routes.post('/C1_ZC', async (req: Request, res: Response) => {
 });
 
 routes.get('/test_db', async (req: Request, res: Response) => {
-  const result = db_query('MET$PROC_INFO_S',[{'PROC_NAME_IN': 'MET$PROC_INFO_S'}]);
-  res.status(201).json(result).send();
+  const result = await db_query('MET$PROC_INFO_S',[{'PROC_NAME_IN': 'MET$PROC_INFO_S'}]);
+  res.status(201).json(result);
 });
 
 routes.post('/C1_ZC_FILE', async (req: Request, res: Response) => {
