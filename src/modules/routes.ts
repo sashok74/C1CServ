@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { getDoc } from './1cdata.js'
 import { getArrayFromFile }  from './getDocLIst.js'
+import { db_query } from './fbquery.js'
 
 const routes = Router();
 
@@ -20,6 +21,10 @@ routes.post('/C1_ZC', async (req: Request, res: Response) => {
   res.send('All documents retrieved.');
 });
 
+routes.get('/test_db', async (req: Request, res: Response) => {
+  const result = db_query('MET$PROC_INFO_S',[{'PROC_NAME_IN': 'MET$PROC_INFO_S'}]);
+  res.status(201).json(result);
+});
 
 routes.post('/C1_ZC_FILE', async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
