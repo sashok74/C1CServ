@@ -5,7 +5,7 @@ dotenv.config();
 const DB_HOST = process.env.DB_HOST;
 export async function db_query(proc: string, prm:any[]) {
     console.log("db_query proc:", proc);
-    const res = await axios.post(`http://${DB_HOST}:3333:/query`,
+    const res = await axios.post(`http://${DB_HOST}:3333/query`,
     {
         'procedureName': proc, 
         'prm': prm,
