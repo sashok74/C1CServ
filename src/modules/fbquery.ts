@@ -12,6 +12,5 @@ export async function db_query(proc: string, prm:any[]) {
         'transactonType':'READ_WRITE'
     }
     );
-    console.log("axios res:",res.data);
-    //return response.data; // здесь возвращается JSON-ответ
+    return res.data;
 }
