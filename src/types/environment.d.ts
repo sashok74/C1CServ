@@ -13,6 +13,7 @@ declare global {
       MONGODB_USER: string;
       MONGODB_PASSWORD: string;
       MONGODB_BASE: string;
+      C1_WEBSERVER: string;
     }
   }
 }
