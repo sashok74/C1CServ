@@ -26,7 +26,11 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
         'transactonType':'READ_WRITE'
     }
     );
+<<<<<<< HEAD
     console.log("axios res:",res.data);
     //return response.data; // здесь возвращается JSON-ответ
 >>>>>>> 67ed03b (db_test)
+=======
+    return res.data;
+>>>>>>> cbb12d6 (db_test)
 }
