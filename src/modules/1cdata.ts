@@ -4,7 +4,7 @@ import { insertC1_ZC } from '../controllers/c1_zc.route.js'
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-let C1_WEBSERVER = process.env.C1_WEBSERVER;
+const C1_WEBSERVER = process.env.C1_WEBSERVER;
 export async function getDoc(uid: string) {
     console.log("getDoc uid:",uid);
     const doc = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/get_order/${uid}`);
