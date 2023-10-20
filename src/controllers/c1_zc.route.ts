@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { ObjectId } from "mongodb";
 import { loadDB } from '../modules/db.js';
 
 
@@ -23,7 +22,26 @@ export async function insertC1_ZC(prm: any) {
       { 'response.ЗаказПокупателя.GUIDЗаказаПокупателя': prm.response.ЗаказПокупателя.GUIDЗаказаПокупателя }
     );
     if (uitems === null){
-      const newrec = await db.collection('C1_ZC').insertOne({...prm, 'res':{'insert_at': today}});
+      const newrec = await db.collection('C1_ZC').insertOne({...prm, 'res':{'insert_at': today, 'ref_id': null}});
+      console.log('insert record:', newrec);
+    }
+    else{
+      console.log('find record:', uitems);
+    }
+  } catch (error) {
+    console.log('error:', error);
+  }
+}
+
+export async function insertC1_Parner(prm: any) {
+  try {
+    const today = new Date();
+    const db = await loadDB();
+    const uitems = await db.collection('C1_ZC').findOne(
+      { 'response.ЗаказПокупателя.GUIDЗаказаПокупателя': prm.response.Контрагент.GUIDКонтрагента }
+    );
+    if (uitems === null){
+      const newrec = await db.collection('C1_Partner').insertOne({...prm, 'res':{'insert_at': today, 'ref_id': null}});
       console.log('insert record:', newrec);
     }
     else{
