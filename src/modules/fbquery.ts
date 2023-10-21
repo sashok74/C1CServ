@@ -8,8 +8,8 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:any[]) {
     const res = await axios.post(`http://${DB_HOST}:3333/query`,
     {
         'procedureName': proc, 
+        'transactonType': trans,
         'prm': prm,
-        'transactonType':trans
     }
     );
     return res.data;
