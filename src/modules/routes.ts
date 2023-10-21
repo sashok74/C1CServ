@@ -25,6 +25,7 @@ routes.post('/C1_ZC', async (req: Request, res: Response) => {
 routes.get('/test_db', async (req: Request, res: Response) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   const result = await db_query('SYS$GET_DB_INFO', 'READ_ONLY', {ECHO_STRING_IN: 'тест базы данных'});
   res.status(201).json(result);
 =======
@@ -33,6 +34,9 @@ routes.get('/test_db', async (req: Request, res: Response) => {
 >>>>>>> 44a0d28 (db_test)
 =======
   const result = await db_query('MET$PROC_INFO_S',[{'PROC_NAME_IN': 'MET$PROC_INFO_S'}]);
+=======
+  const result = await db_query('SYS$GET_DB_INFO',[{'ECHO_STRING_IN': 'тест базы данных'}]);
+>>>>>>> a2367a4 (db_test)
   res.status(201).json(result);
 >>>>>>> 0af67ab (db_test)
 });
