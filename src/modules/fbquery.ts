@@ -3,7 +3,11 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
+<<<<<<< HEAD
 export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) {
+=======
+export async function db_query(proc: string, trans = 'READ_WRITE',  prm:any[]) {
+>>>>>>> 9669d55 (db_test)
     console.log("db_query proc:", proc);
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23,7 +27,7 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
     {
         'procedureName': proc, 
         'prm': prm,
-        'transactonType':'READ_WRITE'
+        'transactonType':trans
     }
     );
 <<<<<<< HEAD
