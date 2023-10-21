@@ -1,11 +1,16 @@
 import axios from 'axios';
+<<<<<<< HEAD
 import { GetCollectionDriver } from '../controllers/c1_zc.route.js';
 import { FindResType, GetObjectType } from '../types/C1Types.js';
+=======
+import { insertC1_ZC, insertC1_Parner } from '../controllers/c1_zc.route.js'
+>>>>>>> 8c0cae1 (partner)
 //import { getOrderResponse } from '../testData/res.getDoc.js'
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 const C1_WEBSERVER = process.env.C1_WEBSERVER;
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 export async function getDoc(uid: string): Promise<GetObjectType> {
@@ -52,16 +57,23 @@ export async function getDoc(uid: string): Promise<GetObjectType> {
   }
   return result;
 =======
+=======
+
+>>>>>>> 8c0cae1 (partner)
 export async function getDoc(uid: string) {
     console.log("getDoc uid:",uid);
-    const doc = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/get_order/${uid}`);
-    console.log("axios res:",doc.data);
+    const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/get_order/${uid}`);
+    console.log("axios res:",res.data);
     //return response.data; // здесь возвращается JSON-ответ
-    await insertC1_ZC(doc.data);
+    //сперва проверим все вложеные объекты
+    //контрагент.
+    await getPartner(res.data.response.ЗаказПокупателя.КонтрагентЗаказаПокупателя.GUIDКонтрагента);
+    await insertC1_ZC(res.data);
     //return getOrderResponse;
 >>>>>>> d2b7547 (db_test)
 }
 
+<<<<<<< HEAD
 export async function getPartner(uid: string): Promise<GetObjectType> {
   const result: GetObjectType = {
     Collection: 'C1_Partner',
@@ -100,4 +112,13 @@ export async function getPartner(uid: string): Promise<GetObjectType> {
     result.err = err;
   }
   return result;
+=======
+export async function getPartner(uid: string) {
+    console.log("getDoc uid:",uid);
+    const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/get_partner/${uid}`);
+    console.log("axios res:",res.data);
+    //return response.data; // здесь возвращается JSON-ответ
+    await insertC1_Parner(res.data);
+    //return getOrderResponse;
+>>>>>>> 8c0cae1 (partner)
 }
