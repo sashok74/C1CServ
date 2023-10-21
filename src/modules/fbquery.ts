@@ -4,10 +4,14 @@ dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
 <<<<<<< HEAD
+<<<<<<< HEAD
 export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) {
 =======
 export async function db_query(proc: string, trans = 'READ_WRITE',  prm:any[]) {
 >>>>>>> 9669d55 (db_test)
+=======
+export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) {
+>>>>>>> e3d729a (db_test)
     console.log("db_query proc:", proc);
 <<<<<<< HEAD
 <<<<<<< HEAD
