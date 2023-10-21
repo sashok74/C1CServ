@@ -15,6 +15,7 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:any[]) {
     {
         'procedureName': proc, 
         'transactonType': trans,
+<<<<<<< HEAD
         'prm': prm,
     }
     );
@@ -26,8 +27,9 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:any[]) {
 >>>>>>> bdc24ee (db_test)
     {
         'procedureName': proc, 
+=======
+>>>>>>> b871557 (db_test)
         'prm': prm,
-        'transactonType':trans
     }
     );
 <<<<<<< HEAD
