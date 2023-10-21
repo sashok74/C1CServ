@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
+<<<<<<< HEAD
 import { loadDB, MongoDBCollection } from '../modules/db.js';
+=======
+import { loadDB } from '../modules/db.js';
+>>>>>>> 7a51c99 (db_test)
 
 
 export async function allC1_ZC(req: Request, res: Response) {
