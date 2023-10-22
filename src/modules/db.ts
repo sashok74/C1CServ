@@ -62,7 +62,7 @@ export class MongoDBCollection {
         console.log('findOne prm:', { [this.queryField]: key });
         const collection = await this.collection;
         return collection
-          .findOne({ [this.queryField]: prm[this.queryField] })
+          .findOne({ [this.queryField]: key })
           .then(data => data ? {...data.res, _id: data._id} : { insert_at: null, ref_id: null, _id: null });
      }    
   }
