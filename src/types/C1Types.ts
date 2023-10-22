@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import { ObjectId } from 'mongodb';
 
 export type FindResType = {'insert_at': Date, 'ref_id': string, _id:ObjectId };
+=======
+import { Collection } from 'mongodb';
+
+export type FindResType = {'insert_at': Date, 'ref_id': string};
+>>>>>>> 3f5cd28 (GetCollectionDriver)
 
 export type GetObjectType = {
     Collection: string,

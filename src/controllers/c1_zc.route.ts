@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { loadDB, MongoDBCollection } from '../modules/db.js';
 =======
 import { loadDB } from '../modules/db.js';
 >>>>>>> 7a51c99 (db_test)
+=======
+import { loadDB, MongoDBCollection } from '../modules/db.js';
+>>>>>>> 3f5cd28 (GetCollectionDriver)
 
 
 export async function allC1_ZC(req: Request, res: Response) {
@@ -58,5 +62,16 @@ export async function insertC1_Parner(prm: any) {
   } catch (error) {
     console.log('error:', error);
   }
+<<<<<<< HEAD
 >>>>>>> 8c0cae1 (partner)
+=======
+}
+
+export async function GetCollectionDriver (collectionName: string, queryField: string) {
+  return new MongoDBCollection(collectionName, queryField);
+}
+
+export const GetC1_ZCDriver = async () => {
+  return new MongoDBCollection('C1_ZC', 'response.ЗаказПокупателя.GUIDЗаказаПокупателя');
+>>>>>>> 3f5cd28 (GetCollectionDriver)
 }
