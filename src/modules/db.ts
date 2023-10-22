@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
-import {  Db, MongoClient } from 'mongodb';
+import {  Db, MongoClient, Collection,  } from 'mongodb';
+import { FindResType } from '../types/C1Types.js';
 import * as Sentry from '@sentry/node';
 
 dotenv.config();
@@ -26,4 +27,42 @@ export const loadDB = async () => {
     return db;
 };
 
+type QueryType = { [key: string]: unknown };
+
+export class MongoDBCollection {
+    private readonly collection: Promise<Collection>;
+    private readonly db:Promise<Db>;
+
+    constructor(
+      private readonly collectionName: string,
+      private readonly queryField: string
+    ) {
+      this.db = loadDB();
+      this.collection = this.getCollection();
+    }
+  
+    private async getCollection(): Promise<Collection> {
+      const db = await this.db;
+      return db.collection(this.collectionName);
+    }
+    
+    async insertOne(doc: object, ref_id: string|null): Promise<unknown> {
+      const collection = await this.collection;
+      return collection.insertOne({...doc, 'res':{'insert_at': new Date(), 'ref_id': ref_id}});
+    }
+  
+    async find(query: QueryType): Promise<unknown[]> {
+      const collection = await this.collection;
+      return collection
+        .find({ [this.queryField]: query[this.queryField] }) 
+        .toArray();
+    }
+
+    async findOne(prm: any): Promise<FindResType> {
+        const collection = await this.collection;
+        return collection
+          .findOne({ [this.queryField]: prm[this.queryField] })
+          .then(data => data ? data.res : { insert_at: null, ref_id: null });
+     }    
+  }
 
