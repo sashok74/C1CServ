@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { insertC1_Parner, GetCollectionDriver } from '../controllers/c1_zc.route.js';
+import { GetCollectionDriver } from '../controllers/c1_zc.route.js';
 import { FindResType, GetObjectType } from '../types/C1Types.js';
 //import { getOrderResponse } from '../testData/res.getDoc.js'
 import * as dotenv from 'dotenv';

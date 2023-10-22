@@ -1,6 +1,6 @@
-import { Collection } from 'mongodb';
+import { ObjectId } from 'mongodb';
 
-export type FindResType = {'insert_at': Date, 'ref_id': string};
+export type FindResType = {'insert_at': Date, 'ref_id': string, _id:ObjectId };
 
 export type GetObjectType = {
     Collection: string,
