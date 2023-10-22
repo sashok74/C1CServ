@@ -26,6 +26,7 @@ export async function getDoc(uid: string): Promise<GetObjectType> {
     result.finding = true;
     return result;
   }
+  console.log('getDoc DoRes:', DoRes);
   //получаем объект из 1С
   try {
     const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/get_order/${uid}`);
