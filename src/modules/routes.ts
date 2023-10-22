@@ -12,13 +12,14 @@ routes.get('/', (req, res) => {
 routes.post('/C1_ZC', async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
   const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
   for (const uid of DOC) {
-    console.log("route C1_ZC uid:", uid);
     const doc_json = await getDoc(uid);
-    console.log("route C1_ZC doc:",doc_json);
+    full_res[ind++] = doc_json;
   }
 
-  res.send('All documents retrieved.');
+  res.status(201).json(full_res);
 });
 
 routes.get('/test_db', async (req: Request, res: Response) => {
