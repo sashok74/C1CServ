@@ -28,7 +28,7 @@ export const ZakazClienta: ObjectSchemType = {
   objectPath: 'response.ЗаказПокупателя',
   prmMap: {
     NUM: createPrm({ fName: 'НомерЗаказаПокупателя'}),
-    DATA_Z: createPrm({ fName: 'НомерЗаказаПокупателя'}),
+    DATA_Z: createPrm({ fName: 'ДатаЗаказаПокупателя'}),
     SROK_Z: createPrm({ fName: 'ДатаОтгрузкиЗаказаПокупателя'}),
     FIRM_ID: createPrm({fName: 'КонтрагентЗаказаПокупателя',
                         objScheme: Kontragent,  

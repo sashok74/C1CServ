@@ -17,7 +17,7 @@ export type  ObjProcessFunc = (obj: any) => void;
 
 export const createPrm = (options = {}) => {
     const defaultOptions = {
-        fName: '',
+        fName: null,
         objScheme: null,
         objUID: null,
         isArray: false,
@@ -34,7 +34,7 @@ export interface ObjectSchemType  {
     servC1Path: string;
     exportProcName: string;
     objectPath: string;
-    prmMap: { [key: string]: {fName: string, objScheme: ObjectSchemType|null,  objUID: string|null, isArray: boolean, type: string, len: number }};
+    prmMap: { [key: string]: {fName: string|null, objScheme: ObjectSchemType|null,  objUID: string|null, isArray: boolean, type: string, len: number }};
     idField: string;
     procFn: ObjProcessFunc|null;
 }

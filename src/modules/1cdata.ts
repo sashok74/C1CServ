@@ -7,6 +7,11 @@ dotenv.config();
 
 const C1_WEBSERVER = process.env.C1_WEBSERVER;
 
+function getValueByPath(obj: any, path: string) {
+  return path.split('.').reduce((o, k) => (o || {})[k], obj);
+}
+
+
 export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise<GetObjectType> {
   const result: GetObjectType = {
     Collection: scheme.collectionName,
@@ -38,8 +43,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
     const inPrm: prmSQLType = {};
 
     for (const key in scheme.prmMap) {
-      if (scheme.prmMap[key].fName != '') {
-        const path:string[] =  (scheme.objectPath + '.' + scheme.prmMap[key].fName).split('.');
+      if (scheme.prmMap[key].fName && scheme.prmMap[key].isArray === false) {
+        const path: string[] = (scheme.objectPath + '.' + scheme.prmMap[key].fName).split('.');
         let value = res.data;
         for (const p of path) {
           if (value[p] !== undefined) {
@@ -49,7 +54,18 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
             break;
           }
         }
-
+        if (
+          scheme.prmMap[key].len > 0 &&
+          scheme.prmMap[key].type === 'VARCHAR' &&
+          scheme.prmMap[key].objScheme === null
+        ) {
+          value = value.substring(0, scheme.prmMap[key].len);
+        } else if (scheme.prmMap[key].objScheme != null) {
+          const uid = getValueByPath(value, scheme.objectPath + '.' + scheme.prmMap[key].objUID);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore: Object is possibly 'null'.
+          value = getObjectC1(scheme.prmMap[key].objScheme, uid);
+        }
         inPrm[key] = value;
       }
     }
