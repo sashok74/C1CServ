@@ -20,7 +20,7 @@ export const ZakazClienta: ObjectSchemType = {
     DATA_ZAIY: '',
   },
   idField: 'res_id',
-  procFn: (obj) => {},
+  procFn: null,
 };
 
 export const Kontragent: ObjectSchemType = {
@@ -39,5 +39,5 @@ export const Kontragent: ObjectSchemType = {
       DATA_ZAIY: '',
     },
     idField: 'res_id',
-    procFn: (obj) => {},
+    procFn: null,
   };
