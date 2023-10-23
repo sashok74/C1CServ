@@ -10,3 +10,16 @@ export type GetObjectType = {
     finding: boolean
     err: any
 };
+
+export type  ObjProcessFunc = (obj: any) => void;
+
+export interface ObjectSchemType  {
+    schemeName: string;
+    collectionName: string; 
+    queryField: string;
+    servC1Path: string;
+    exportProcName: string;
+    prmMap: { [key: string]: string };
+    idField: string;
+    procFn: ObjProcessFunc|null;
+}
