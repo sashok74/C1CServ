@@ -64,7 +64,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
           const uid = getValueByPath(value, scheme.objectPath + '.' + scheme.prmMap[key].objUID);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
-          value = getObjectC1(scheme.prmMap[key].objScheme, uid);
+          value = await getObjectC1(scheme.prmMap[key].objScheme, uid);
         }
         inPrm[key] = value;
       }
