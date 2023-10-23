@@ -38,8 +38,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
     const inPrm: prmSQLType = {};
 
     for (const key in scheme.prmMap) {
-      if (scheme.prmMap[key].fName) {
-        const path:string[] = scheme.prmMap[key].fName.split('.');
+      if (scheme.prmMap[key].fName != '') {
+        const path:string[] =  (scheme.objectPath + '.' + scheme.prmMap[key].fName).split('.');
         let value = res.data;
         for (const p of path) {
           if (value[p] !== undefined) {
