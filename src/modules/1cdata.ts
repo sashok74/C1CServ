@@ -11,7 +11,6 @@ function getValueByPath(obj: any, path: string) {
   return path.split('.').reduce((o, k) => (o || {})[k], obj);
 }
 
-
 export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise<GetObjectType> {
   const result: GetObjectType = {
     Collection: scheme.collectionName,
@@ -21,7 +20,10 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
     finding: false,
     err: null,
   };
-  console.log('${scheme.collectionName} uid:', uid);
+  if (!uid) {
+    return result;
+  }
+  console.log(`${scheme.collectionName} uid:`, uid);
   //объект для работы с соответствующей колекцией
   const Doc = await GetCollectionDriver(scheme.collectionName, scheme.queryField);
   //проверим. возможно уже экспортировался.
@@ -62,6 +64,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
           value = value.substring(0, scheme.prmMap[key].len);
         } else if (scheme.prmMap[key].objScheme != null) {
           const uid = getValueByPath(value, scheme.objectPath + '.' + scheme.prmMap[key].objUID);
+          console.log('getObjectC1 uid:', uid);
+
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
           value = await getObjectC1(scheme.prmMap[key].objScheme, uid);
@@ -77,10 +81,12 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
     //все вложенные записи типа массив также добавляем в базу данных ERP
 
     //добавляем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
-    const isertRes: any = await Doc.insertOne(res.data, result.ref_id);
-    if (!isertRes.acknowledged) {
-      // не удалось вставить запись в лог монго.
-      result.err = { errDescription: 'ошибка вставки в MongoDB' };
+    if (!result.finding) {
+      const isertRes: any = await Doc.insertOne(res.data, result.ref_id);
+      if (!isertRes.acknowledged) {
+        // не удалось вставить запись в лог монго.
+        result.err = { errDescription: 'ошибка вставки в MongoDB' };
+      }
     }
   } catch (err) {
     result.err = err;
