@@ -58,12 +58,15 @@ export class MongoDBCollection {
         .toArray();
     }
 
-    async findOne(prm: any): Promise<FindResType> {
-        console.log('findOne prm:', prm);
+    async findOne(uid: any): Promise<FindResType> {
         const collection = await this.collection;
+        console.log({ [this.queryField]: uid });
         return collection
-          .findOne({ [this.queryField]: prm[this.queryField] })
-          .then(data => data ? {...data.res, _id: data._id} : { insert_at: null, ref_id: null, _id: null });
+          .findOne({ [this.queryField]: uid })
+          .then(data => {
+            console.log ('findOne data:', data);
+            return data ? {...data.res, _id: data._id} : { insert_at: null, ref_id: null, _id: null };
+          }
      }    
   }
 
