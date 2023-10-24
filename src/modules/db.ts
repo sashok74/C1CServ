@@ -63,10 +63,7 @@ export class MongoDBCollection {
         console.log({ [this.queryField]: uid });
         return collection
           .findOne({ [this.queryField]: uid })
-          .then(data => {
-            console.log ('findOne data:', data);
-            return data ? {...data.res, _id: data._id} : { insert_at: null, ref_id: null, _id: null };
-          }
+          .then(data => data ? {...data.res, _id: data._id} : { insert_at: null, ref_id: null, _id: null })
      }    
   }
 
