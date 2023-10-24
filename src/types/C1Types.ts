@@ -7,9 +7,11 @@ export type prmSQLType = { [key: string]: unknown };
 export type GetObjectType = {
     Collection: string,
     uid: string,
+    _id: ObjectId|null,
     ref_id: string|null,
     inserting: boolean,
     finding: boolean,
+    prmSQLiu: prmSQLType,
     err: any
 };
 

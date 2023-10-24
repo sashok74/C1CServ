@@ -15,12 +15,14 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
   const result: GetObjectType = {
     Collection: scheme.collectionName,
     uid: uid,
+    _id: null,
     ref_id: null,
     inserting: false,
     finding: false,
+    prmSQLiu: {},
     err: null,
   };
-  if (!uid) {
+    if (!uid) {
     return result;
   }
   console.log(`${scheme.collectionName} uid:`, uid);
@@ -29,7 +31,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
   //проверим. возможно уже экспортировался.
   const DoRes: FindResType = await Doc.findOne(uid);
   if (DoRes._id != null) {
-    result.finding = true;
+    result._id = DoRes._id,
+    result.finding = true
   }
   //уже есть связанный документ возвращаем результат.
   if (DoRes.ref_id != null) {
@@ -63,7 +66,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
         ) {
           value = value.substring(0, scheme.prmMap[key].len);
         } else if (scheme.prmMap[key].objScheme != null) {
-          const uid = getValueByPath(value, scheme.objectPath + '.' + scheme.prmMap[key].objUID);
+          const uid = getValueByPath(value, scheme.objectPath + '.' + scheme.prmMap[key].fName + '.' + scheme.prmMap[key].objUID);
           console.log('getObjectC1 uid:', uid);
 
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -73,20 +76,22 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
         inPrm[key] = value;
       }
     }
-
+    result.prmSQLiu = inPrm; 
     console.log('inPrm:', inPrm);
 
     //добавляем документв в базу данных ERP
 
     //все вложенные записи типа массив также добавляем в базу данных ERP
 
-    //добавляем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
+    //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (!result.finding) {
       const isertRes: any = await Doc.insertOne(res.data, result.ref_id);
       if (!isertRes.acknowledged) {
         // не удалось вставить запись в лог монго.
         result.err = { errDescription: 'ошибка вставки в MongoDB' };
       }
+    }else{
+
     }
   } catch (err) {
     result.err = err;
