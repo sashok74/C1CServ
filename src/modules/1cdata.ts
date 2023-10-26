@@ -66,7 +66,9 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
 
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
-          value = await getObjectC1(scheme.prmMap[key].objScheme, uid);
+          const res = await getObjectC1(scheme.prmMap[key].objScheme, uid);
+          value = res.ref_id;
+          inPrm[`${key}_NESTED`] = res;
         }
         inPrm[key] = value;
       }
