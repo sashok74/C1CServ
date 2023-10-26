@@ -8,7 +8,7 @@ export type GetObjectType = {
     Collection: string,
     uid: string,
     _id: ObjectId|null,
-    ref_id: string|null,
+    ref_id: string|null|number,
     inserting: boolean,
     finding: boolean,
     prmSQLiu: prmSQLType,
@@ -36,7 +36,8 @@ export interface ObjectSchemType  {
     servC1Path: string;
     exportProcName: string;
     objectPath: string;
-    prmMap: { [key: string]: {fName: string|null, objScheme: ObjectSchemType|null,  objUID: string|null, isArray: boolean, type: string, len: number }};
+    prmMap: { [key: string]: {fName: string|null, objScheme?: ObjectSchemType|null,  objUID: string|null, isArray: boolean, type: string, len: number }};
     idField: string;
+    StrResField: string;
     procFn: ObjProcessFunc|null;
 }

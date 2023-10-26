@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getObjectC1 } from './1cdata.js'
 import { getArrayFromFile }  from './getDocLIst.js'
 import { db_query } from './fbquery.js'
-import { ZakazClienta, Kontragent } from '../types/ExportSchemes.js';
+import { ZakazClienta, Kontragent, Catalog } from '../types/ExportSchemes.js';
 
 const routes = Router();
 
@@ -29,6 +29,18 @@ routes.post('/C1_Partner', async (req: Request, res: Response) => {
   let ind = 0;
   for (const uid of DOC) {
     const doc_json = await getObjectC1(Kontragent, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
+
+routes.post('/C1_Catalog', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(Catalog, uid);
     full_res[ind++] = doc_json;
   }
   res.status(201).json(full_res);

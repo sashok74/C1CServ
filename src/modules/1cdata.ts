@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { GetCollectionDriver } from '../controllers/c1_zc.route.js';
 import { FindResType, GetObjectType, ObjectSchemType, prmSQLType } from '../types/C1Types.js';
+import { db_query } from './fbquery.js'
 //import { getOrderResponse } from '../testData/res.getDoc.js'
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -71,10 +72,15 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
       }
     }
     result.prmSQLiu = inPrm; 
-    console.log('inPrm:', inPrm);
-
     //добавляем документв в базу данных ERP
-
+    if (scheme.exportProcName) {
+      const resExp = await db_query(scheme.exportProcName, 'READ_WRITE', inPrm);
+      //запишим id добавленного документа в REF_ID
+      result.ref_id = resExp[0][scheme.idField];
+      if (result.ref_id == -1) {
+        result.err = { errDescription: resExp[0][scheme.StrResField] };
+      }
+    }
     //все вложенные записи типа массив также добавляем в базу данных ERP
 
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
@@ -84,8 +90,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string): Promise
         // не удалось вставить запись в лог монго.
         result.err = { errDescription: 'ошибка вставки в MongoDB' };
       }
-    }else{
-
+    }else{ // делаем апдейт данных.. скорей всего только ref_id?
+      result.err = { errDescription: 'ошибка обновления в MongoDB' };
     }
   } catch (err) {
     result.err = err;

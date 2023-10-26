@@ -46,7 +46,7 @@ export class MongoDBCollection {
       return db.collection(this.collectionName);
     }
     
-    async insertOne(doc: object, ref_id: string|null): Promise<unknown> {
+    async insertOne(doc: object, ref_id: string|null|number): Promise<unknown> {
       const collection = await this.collection;
       return collection.insertOne({...doc, 'res':{'insert_at': new Date(), 'ref_id': ref_id}});
     }
@@ -60,7 +60,6 @@ export class MongoDBCollection {
 
     async findOne(uid: any): Promise<FindResType> {
         const collection = await this.collection;
-        console.log({ [this.queryField]: uid });
         return collection
           .findOne({ [this.queryField]: uid })
           .then(data => data ? {...data.res, _id: data._id} : { insert_at: null, ref_id: null, _id: null })
