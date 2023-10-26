@@ -34,7 +34,7 @@ function getCatalog(): ObjectSchemType {
       schemeName: 'Каталог номенклатуры',
       collectionName: 'C1_Catalog',
       queryField: 'response.ГруппаНоменклатуры.GUIDГруппыНоменклатуры',
-      servC1Path: 'nomenclaturecategories',
+      servC1Path: 'get_nomenclature_group',
       exportProcName: 'EXP_CATALOG_IU',
       objectPath: 'response.ГруппаНоменклатуры',
       prmMap: {
