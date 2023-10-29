@@ -1,8 +1,78 @@
-import { ObjProcessFunc, ObjectSchemType, createPrm } from './C1Types.js';
+import { ObjectSchemType, createPrm } from './C1Types.js';
 
 // prmMap соответсвеие параметров процедуры для экспорта и
 // поелй объекта и которого эти данные берем
 // получить параметры процедуры можно из функции MET$PROC_IN_PARAM_INFO_S
+// select param_name || ': createPrm({fName: ''''' || iif(pfrom=0 , '', ', len: '|| substring(param_type from pfrom+1 for pto - pfrom - 1 )) ||'}),'
+// from (select
+//         trim(f.param_name) as param_name,
+//         trim(f.param_type)  as param_type,
+//          position('(',f.param_type) as pfrom,
+//          position(')',f.param_type) as pto
+//        from MET$PROC_IN_PARAM_INFO_S(:proc) f)
+
+export const Measure: ObjectSchemType = {
+  schemeName: 'Единицы измерения',
+  collectionName: 'C1_Measure',
+  queryField: 'response.ЕдиницаИзмерения.GUIDEдиницыИзмерения',
+  servC1Path: 'get_measure',
+  exportProcName: 'EXP_MEASURE_IU',
+  objectPath: 'response.ЕдиницаИзмерения',
+  prmMap: {
+   // ID: createPrm({ fName: '' }),
+    MEASURE_NAME: createPrm({ fName: 'СокращениеЕдиницыИзмерения', len: 15 }),
+    MEASURE_COD: createPrm({ fName: 'КодЕдиницыИзмерения', len: 3 }),
+    DESCR: createPrm({ fName: 'НаименованиеЕдиницыИзмерения', len: 15 }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR'
+};
+
+export const City: ObjectSchemType = {
+  schemeName: 'Города',
+  collectionName: 'C1_City',
+  queryField: 'response.Город.GUIDГорода',
+  servC1Path: 'get_city',
+  exportProcName: 'EXP_CITY_IU',
+  objectPath: 'response.Город',
+  prmMap: {
+    ID: createPrm({}),
+    CITY_NAME: createPrm({ fName: 'НаименованиеГорода', len: 50 }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR'
+};
+
+export const Country: ObjectSchemType = {
+  schemeName: 'Страны',
+  collectionName: 'C1_Country',
+  queryField: 'response.Страна.GUIDСтраны',
+  servC1Path: 'get_country',
+  exportProcName: 'EXP_COUNTRY_IU',
+  objectPath: 'response.Страна',
+  prmMap: {
+    ID: createPrm({}),
+    COUNTRY_NAME: createPrm({ fName: 'НаименованиеСтраны', len: 50 }),
+    COUNTRY_COD: createPrm({ fName: 'КодСтраны', len: 3 }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR'
+};
+
+export const Storage: ObjectSchemType = {
+  schemeName: 'Участки',
+  collectionName: 'C1_Storage',
+  queryField: 'response.СтруктурноеПодразделение.GUIDСтруктурнойЕдиницы',
+  servC1Path: 'get_organizational_unit',
+  exportProcName: 'EXP_STORAGE_IU',
+  objectPath: 'response.СтруктурноеПодразделение',
+  prmMap: {
+    //ID: createPrm({}),
+    STORAGE_NAME: createPrm({ fName: 'НаименованиеСтруктурнойЕдиницы', len: 50 }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR'
+};
 
 export const Kontragent: ObjectSchemType = {
   schemeName: 'Контрагент',
@@ -12,12 +82,20 @@ export const Kontragent: ObjectSchemType = {
   exportProcName: 'STR_FIRM_IU',
   objectPath: 'response.Контрагент',
   prmMap: {
-    STR_ID: createPrm({ fName: '' }),
-    NAME: createPrm({ fName: 'НаименованиеКонтрагента', len: 50 }),
+    //ID: createPrm({ fName: '' }),
+    FIRM_NAME: createPrm({ fName: 'НаименованиеКонтрагента', len: 50 }),
+    CITY_ID: createPrm({ fName: '' }),
+    ADDRESS: createPrm({ fName: 'АдресКонтрагентаПолный', len: 255 }),
+    CONTACT_PERSON: createPrm({ fName: 'НаименованиеКонтактногоЛицаКонтрагента', len: 100 }),
+    INN: createPrm({ fName: 'ИННКонтрагента', len: 12 }),
+    COUNTRY_ID: createPrm({ fName: '' }),
+    KPP: createPrm({ fName: 'КППКонтрагента', len: 9 }),
+    OKPO: createPrm({ fName: 'ОКПОКонтрагента', len: 14 }),
+    BANK_ACCOUNT: createPrm({ fName: 'НомерБанковсогоСчетаКонтрагента', len: 34 }),
+    BANK_ACCOUNT_COUNTRY_COD: createPrm({ fName: 'КодСтраныБанковсогоСчетаКонтрагента', len: 3 }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR',
-  procFn: null,
+  StrResField: 'RES_STR'
 };
 
 //SELECT RES_ID, RES_STR from EXP_CATALOG_IU(:ID, :PID, :CATALOG_NAME, :KEYW)
@@ -25,7 +103,7 @@ export const Kontragent: ObjectSchemType = {
 
 let catalog: ObjectSchemType;
 
-// из-за рекурссии использования catalog.prmMap.PID.objScheme 
+// из-за рекурссии использования catalog.prmMap.PID.objScheme
 // оформим в виде функции.
 
 function getCatalog(): ObjectSchemType {
@@ -44,8 +122,7 @@ function getCatalog(): ObjectSchemType {
         KEYW: createPrm({ fName: '', len: 4 }),
       },
       idField: 'RES_ID',
-      StrResField: 'RES_STR',
-      procFn: null,
+      StrResField: 'RES_STR'
     };
 
     catalog.prmMap.PID.objScheme = catalog;
@@ -60,15 +137,14 @@ export const ZakazClienta: ObjectSchemType = {
   collectionName: 'C1_ZC',
   queryField: 'response.ЗаказПокупателя.GUIDЗаказаПокупателя',
   servC1Path: 'get_order',
-  exportProcName: 'C1_ZAKAZ_H_I',
+  exportProcName: 'EXP_ZAKAZ_IU',
   objectPath: 'response.ЗаказПокупателя',
   prmMap: {
-    NUM: createPrm({ fName: 'НомерЗаказаПокупателя' }),
+    NUM_Z: createPrm({ fName: 'НомерЗаказаПокупателя' }),
     DATA_Z: createPrm({ fName: 'ДатаЗаказаПокупателя' }),
     SROK_Z: createPrm({ fName: 'ДатаОтгрузкиЗаказаПокупателя' }),
     FIRM_ID: createPrm({ fName: 'КонтрагентЗаказаПокупателя', objScheme: Kontragent, objUID: 'GUIDКонтрагента' }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR',
-  procFn: null,
+  StrResField: 'RES_STR'
 };

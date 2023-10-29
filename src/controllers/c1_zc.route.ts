@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { loadDB, MongoDBCollection } from '../modules/db.js';
 
-
 export async function allC1_ZC(req: Request, res: Response) {
   try {
     const db = await loadDB();
@@ -14,6 +13,10 @@ export async function allC1_ZC(req: Request, res: Response) {
   }
 }
 
-export async function GetCollectionDriver (collectionName: string, queryField: string) {
-  return new MongoDBCollection(collectionName, queryField);
+export async function GetCollectionDriver(collectionName: string, queryField: string) {
+  if (collectionName.length === 0) {
+    return null;
+  } else {
+    return new MongoDBCollection(collectionName, queryField);
+  }
 }
