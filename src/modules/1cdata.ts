@@ -60,7 +60,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
-
+     
     //добавляем документв в базу данных ERP
     ({ ref_id: result.ref_id, err: result.err } = await execObjQuery(
       scheme.exportProcName,
@@ -68,6 +68,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       scheme.idField,
       scheme.StrResField,
     ));
+    console.log(`${scheme.collectionName} result end:`, result);
     //все вложенные записи типа массив также добавляем в базу данных ERP
 
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
