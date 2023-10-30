@@ -29,11 +29,11 @@ async function execObjQuery(
 }
 
 export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: any): Promise<GetObjectType> {
+  console.log(`${scheme.schemeName} uid: ${uid}`);
   const result: GetObjectType = createGetObjectType({
     Collection: scheme.collectionName,
     uid: uid,
   });
-  console.log(`${scheme.collectionName} uid:`, uid);
   if (!uid) {
     return result;
   }
