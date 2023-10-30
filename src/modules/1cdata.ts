@@ -59,6 +59,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
+    console.log(`${scheme.collectionName} result prmSQLiu:`, result); 
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
     console.log(`${scheme.collectionName} result prm:`, result); 
     //добавляем документв в базу данных ERP
