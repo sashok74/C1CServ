@@ -22,7 +22,6 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
 // и заполняет объект prm имя параметра - значение.
 export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmSQLType> {
     const prm: prmSQLType = {};
-    // console.log('getPrmSQLType inArr:', data);
     for (const key in inArr) {
       if (inArr[key].fName != null) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

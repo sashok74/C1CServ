@@ -17,7 +17,7 @@ async function execObjQuery(
   strResFieldName: string,
 ) {
   const result = { ref_id: null, err: {} };
-  console.log('execObjQuery ', exportProcName, prmSQLiu)
+  console.log('execObjQuery ', exportProcName, prmSQLiu);
   if (exportProcName) {
     const resExp = await db_query(exportProcName, 'READ_WRITE', prmSQLiu);
     result.ref_id = resExp[0][resFieldName];
@@ -57,17 +57,14 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
-  //  console.log(`${scheme.collectionName} result prmSQLiu:`, result); 
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
-   // console.log(`${scheme.collectionName} result prm:`, result); 
     //добавляем документв в базу данных ERP
-    /*
     ({ ref_id: result.ref_id, err: result.err } = await execObjQuery(
       scheme.exportProcName,
       result.prmSQLiu,
       scheme.idField,
       scheme.StrResField,
-    ));*/
+    ));
     //console.log(`${scheme.collectionName} result end:`, result);
     //все вложенные записи типа массив также добавляем в базу данных ERP
 
@@ -78,6 +75,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         if (!isertRes.acknowledged) {
           // не удалось вставить запись в лог монго.
           result.err = { errDescription: 'ошибка вставки в MongoDB' };
+        } else {
+          result.inserting = true;
         }
       } else {
         // делаем апдейт данных.. скорей всего только ref_id?
