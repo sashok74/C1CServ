@@ -37,7 +37,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
   if (!uid) {
     return result;
   }
-  //console.log(`${scheme.collectionName} uid:`, uid);
+  console.log(`${scheme.collectionName} uid:`, uid);
   //объект для работы с соответствующей колекцией
   const Doc = await GetCollectionDriver(scheme.collectionName, scheme.queryField);
   let DoRes: FindResType;
@@ -59,6 +59,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
+    console.log(`${scheme.collectionName} result res:`, res); 
     console.log(`${scheme.collectionName} result prmSQLiu:`, result); 
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
     console.log(`${scheme.collectionName} result prm:`, result); 
