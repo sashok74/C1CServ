@@ -17,7 +17,6 @@ async function execObjQuery(
   strResFieldName: string,
 ) {
   const result = { ref_id: null, err: {} };
-  console.log('execObjQuery ', exportProcName, prmSQLiu);
   if (exportProcName) {
     const resExp = await db_query(exportProcName, 'READ_WRITE', prmSQLiu);
     result.ref_id = resExp[0][resFieldName];

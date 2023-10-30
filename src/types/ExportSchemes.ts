@@ -79,7 +79,7 @@ export const Kontragent: ObjectSchemType = {
   collectionName: 'C1_Partner',
   queryField: 'response.Контрагент.GUIDКонтрагента',
   servC1Path: 'get_partner',
-  exportProcName: 'STR_FIRM_IU',
+  exportProcName: 'EXP_FIRM_IU',
   objectPath: 'response.Контрагент',
   prmMap: {
     //ID: createPrm({ fName: '' }),

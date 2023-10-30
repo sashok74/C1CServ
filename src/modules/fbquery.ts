@@ -48,7 +48,6 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
         prm[key] = value;
       }
     }  
-    console.log('getObjectC1 prm:', prm);
     return prm;
   }
   
