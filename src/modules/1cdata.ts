@@ -33,9 +33,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     Collection: scheme.collectionName,
     uid: uid,
   });
-  if (!uid) {
-    return result;
-  }
+
   //объект для работы с соответствующей колекцией
   const Doc = await GetCollectionDriver(scheme.collectionName, scheme.queryField);
   let DoсRes: FindResType;
@@ -79,11 +77,9 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
           const arrName = scheme.objectPath  + '.' + scheme.arrMap[key].fName;
           if (arrName != null) {
             const arrayItems:any[] = getValueByPath(res.data, arrName);
-            console.log('arrayItems:', arrayItems);
             for (const elem of arrayItems) {
              // для каждого вложенного элемента
                 elem["PARENT_ID"] = result.ref_id;
-                console.log('elem:', elem);
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore: Object is possibly 'null'.
                 await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
