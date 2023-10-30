@@ -16,6 +16,7 @@ async function execObjQuery(
   resFieldName: string,
   strResFieldName: string,
 ) {
+  console.log(`execObjQuery`);
   const result = { ref_id: null, err: {} };
   if (exportProcName) {
     const resExp = await db_query(exportProcName, 'READ_WRITE', prmSQLiu);
@@ -53,11 +54,13 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
   //получаем объект из 1С
   try {
     let res;
-    if (uid)
+    if (uid) {
       res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
+      console.log('axios.get: ${scheme.servC1Path}');
+    }  
     else {
       res = inObj; 
-      console.log('item: ',res);
+      console.log('nested object');
     }  
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
