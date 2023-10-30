@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { prmSQLType, prmMapType } from '../types/C1Types.js';
 import { getValueByPath } from './objHelper.js';
+import { getObjectC1 } from './1cdata.js';
 dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
@@ -38,15 +39,13 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
           const uid = getValueByPath(value, inArr[key].objUID);
-          console.log(`getObjectC1 uid: ${uid}`, inArr[key].objScheme);
-  
+ 
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
           const res = await getObjectC1(inArr[key].objScheme, uid);
           value = res.ref_id;
           prm[`${key}_NESTED`] = res;
         }
-        console.log(`getPrmSQLType prm[${key}]:`, value);
         prm[key] = value;
       }
     }  
