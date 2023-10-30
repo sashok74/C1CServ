@@ -34,7 +34,10 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
           inArr[key].type === 'VARCHAR' &&
           inArr[key].objScheme === null
         ) {
-          value = value.substring(0, inArr[key].len);
+          if (value)
+            value = value.substring(0, inArr[key].len);
+          else 
+            value = null;
         } else if (inArr[key].objScheme != null) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
