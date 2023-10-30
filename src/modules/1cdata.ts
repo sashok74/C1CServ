@@ -53,18 +53,19 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
 
   //получаем объект из 1С
   try {
-    let res;
+    let obj;
     if (uid) {
-      res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
+      const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
       console.log('axios.get: ${scheme.servC1Path}');
+      obj = res.data;
     }  
     else {
-      res = inObj; 
+      obj = inObj; 
       console.log('nested object');
     }  
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
-    result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
+    result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(obj, scheme.objectPath));
     console.log(`${scheme.schemeName} prmSQLiu: ${result.prmSQLiu}`);
     //добавляем документв в базу данных ERP
     ({ ref_id: result.ref_id, err: result.err } = await execObjQuery(
@@ -80,7 +81,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         if (scheme.arrMap[key].fName != null) {
           const arrName = scheme.objectPath  + '.' + scheme.arrMap[key].fName;
           if (arrName != null) {
-            const arrayItems:any[] = getValueByPath(res.data, arrName);
+            const arrayItems:any[] = getValueByPath(obj, arrName);
             for (const elem of arrayItems) {
              // для каждого вложенного элемента
                 elem["PARENT_ID"] = result.ref_id;
@@ -95,7 +96,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (Doc != null) {
       if (!result.finding) {
-        const isertRes: any = await Doc.insertOne(res.data, result.ref_id);
+        const isertRes: any = await Doc.insertOne(obj, result.ref_id);
         if (!isertRes.acknowledged) {
           // не удалось вставить запись в лог монго.
           result.err = { errDescription: 'ошибка вставки в MongoDB' };
