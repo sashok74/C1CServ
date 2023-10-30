@@ -58,6 +58,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
+    console.log(`${scheme.schemeName} prmSQLiu: ${result.prmSQLiu}`);
     //добавляем документв в базу данных ERP
     ({ ref_id: result.ref_id, err: result.err } = await execObjQuery(
       scheme.exportProcName,
