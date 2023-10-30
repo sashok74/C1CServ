@@ -22,12 +22,14 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
 // и заполняет объект prm имя параметра - значение.
 export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmSQLType> {
     console.log(`getPrmSQLType`);
+    console.log(data);
     const prm: prmSQLType = {};
+    let path: string;
     for (const key in inArr) {
       if (inArr[key].fName != null) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore: Object is possibly 'null'.
-        const path: string = inArr[key].fName;
+        path = inArr[key].fName;
         let value = getValueByPath(data, path);
         if (
           inArr[key].len > 0 &&
@@ -56,7 +58,7 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
       
         }
         prm[key] = value;
-        console.log(`|  ${key} - ${value}`);
+        console.log(`|  ${key} - ${path} - ${value}`);
       }
     }  
     return prm;
