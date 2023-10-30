@@ -14,9 +14,7 @@ export async function allC1_ZC(req: Request, res: Response) {
 }
 
 export async function GetCollectionDriver(collectionName: string, queryField: string) {
-  if (collectionName.length === 0) {
-    return null;
-  } else {
-    return new MongoDBCollection(collectionName, queryField);
-  }
+  if (collectionName.length === 0) return null;
+  else return new MongoDBCollection(collectionName, queryField);
 }
+

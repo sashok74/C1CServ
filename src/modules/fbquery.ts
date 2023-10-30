@@ -37,7 +37,7 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
           const uid = getValueByPath(value, inArr[key].objUID);
-          console.log('getObjectC1 uid:', value, uid);
+          //console.log('getObjectC1 uid:', value, uid);
   
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
@@ -48,6 +48,7 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
         prm[key] = value;
       }
     }  
+    console.log('getObjectC1 prm:', prm);
     return prm;
   }
   
