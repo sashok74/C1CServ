@@ -50,10 +50,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     if (DoсRes.ref_id != null) {
       result.ref_id = DoсRes.ref_id;
     }
-    console.log(`${scheme.collectionName} Doc:`, Doc, DoсRes);
   }
-  // ####
-  console.log(`${scheme.collectionName} Doc1:`);
 
   //получаем объект из 1С
   try {
@@ -64,13 +61,14 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
    // console.log(`${scheme.collectionName} result prm:`, result); 
     //добавляем документв в базу данных ERP
+    /*
     ({ ref_id: result.ref_id, err: result.err } = await execObjQuery(
       scheme.exportProcName,
       result.prmSQLiu,
       scheme.idField,
       scheme.StrResField,
-    ));
-    console.log(`${scheme.collectionName} result end:`, result);
+    ));*/
+    //console.log(`${scheme.collectionName} result end:`, result);
     //все вложенные записи типа массив также добавляем в базу данных ERP
 
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
