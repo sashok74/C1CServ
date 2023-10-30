@@ -84,11 +84,11 @@ export const Kontragent: ObjectSchemType = {
   prmMap: {
     //ID: createPrm({ fName: '' }),
     FIRM_NAME: createPrm({ fName: 'НаименованиеКонтрагента', len: 50 }),
-    CITY_ID: createPrm({ fName: '' }),
+    //CITY_ID: createPrm({ fName: '' }),
     ADDRESS: createPrm({ fName: 'АдресКонтрагентаПолный', len: 255 }),
     CONTACT_PERSON: createPrm({ fName: 'НаименованиеКонтактногоЛицаКонтрагента', len: 100 }),
     INN: createPrm({ fName: 'ИННКонтрагента', len: 12 }),
-    COUNTRY_ID: createPrm({ fName: '' }),
+    //COUNTRY_ID: createPrm({ fName: '' }),
     KPP: createPrm({ fName: 'КППКонтрагента', len: 9 }),
     OKPO: createPrm({ fName: 'ОКПОКонтрагента', len: 14 }),
     BANK_ACCOUNT: createPrm({ fName: 'НомерБанковсогоСчетаКонтрагента', len: 34 }),

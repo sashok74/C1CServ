@@ -21,7 +21,7 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
 // и заполняет объект prm имя параметра - значение.
 export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmSQLType> {
     const prm: prmSQLType = {};
-    console.log('getObjectC1 inArr:', inArr);
+    //console.log('getObjectC1 inArr:', inArr);
     for (const key in inArr) {
       if (inArr[key].fName != null) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -38,7 +38,7 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
           const uid = getValueByPath(value, inArr[key].objUID);
-          console.log('getObjectC1 uid:', inArr[key].objScheme, uid);
+          //console.log('getObjectC1 uid:', inArr[key].objScheme, uid);
   
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore: Object is possibly 'null'.
