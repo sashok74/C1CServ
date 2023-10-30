@@ -47,6 +47,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     if (DoсRes.ref_id != null) {
       result.ref_id = DoсRes.ref_id;
     }
+    console.log(`${scheme.schemeName} find in mongo id: ${result._id}`);
   }
 
   //получаем объект из 1С
