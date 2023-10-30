@@ -17,7 +17,7 @@ async function execObjQuery(
   strResFieldName: string,
 ) {
   const result = { ref_id: null, err: {} };
-
+  console.log('execObjQuery ', exportProcName, prmSQLiu)
   if (exportProcName) {
     const resExp = await db_query(exportProcName, 'READ_WRITE', prmSQLiu);
     result.ref_id = resExp[0][resFieldName];
@@ -33,26 +33,27 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     Collection: scheme.collectionName,
     uid: uid,
   });
-
+  console.log(`${scheme.collectionName} uid:`, uid);
   if (!uid) {
     return result;
   }
-  console.log(`${scheme.collectionName} uid:`, uid);
   //объект для работы с соответствующей колекцией
   const Doc = await GetCollectionDriver(scheme.collectionName, scheme.queryField);
-  let DoRes: FindResType;
+  let DoсRes: FindResType;
   //проверим. возможно уже экспортировался. ####
   if (Doc != null) {
-    DoRes = await Doc.findOne(uid);
-    if (DoRes._id != null) {
-      (result._id = DoRes._id), (result.finding = true);
+    DoсRes = await Doc.findOne(uid);
+    if (DoсRes._id != null) {
+      (result._id = DoсRes._id), (result.finding = true);
     }
     //уже есть связанный документ возвращаем результат.
-    if (DoRes.ref_id != null) {
-      result.ref_id = DoRes.ref_id;
+    if (DoсRes.ref_id != null) {
+      result.ref_id = DoсRes.ref_id;
     }
+    console.log(`${scheme.collectionName} Doc:`, Doc, DoсRes);
   }
   // ####
+  console.log(`${scheme.collectionName} Doc1:`);
 
   //получаем объект из 1С
   try {
