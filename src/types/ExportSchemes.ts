@@ -84,6 +84,7 @@ export const Kontragent: ObjectSchemType = {
   prmMap: {
     //ID: createPrm({ fName: '' }),
     FIRM_NAME: createPrm({ fName: 'НаименованиеКонтрагента', len: 50 }),
+    FIRM_CODE: createPrm({ fName: 'КодКонтрагента', len: 9 }),
     //CITY_ID: createPrm({ fName: '' }),
     ADDRESS: createPrm({ fName: 'АдресКонтрагентаПолный', len: 255 }),
     CONTACT_PERSON: createPrm({ fName: 'НаименованиеКонтактногоЛицаКонтрагента', len: 100 }),
@@ -132,6 +133,42 @@ function getCatalog(): ObjectSchemType {
 }
 export const Catalog = getCatalog();
 
+export const Nom: ObjectSchemType = {
+  schemeName: 'Номенклатура',
+  collectionName: 'C1_Nom',
+  queryField: 'response.Номенклатура.GUIDНоменклатуры',
+  servC1Path: 'get_nomenclature',
+  exportProcName: 'EXP_NOM_IU',
+  objectPath: 'response.Номенклатура',
+  prmMap: {
+    //ID: createPrm({fName: ''}),
+    NAME_IZD: createPrm({fName: 'НаименованиеНоменклатуры', len: 150}),
+    KOD_IZD: createPrm({fName: 'КодНоменклатуры', len: 10}),
+    ART_IZD: createPrm({fName: 'АртикулНоменклатуры', len: 15}),
+    MEASURE_ID: createPrm({fName: 'ЕдиницаИзмеренияНоменклатуры', objScheme: Measure, objUID: 'GUIDКдиницыИзмерения'}),
+    CATALOG_ID: createPrm({fName: 'ГруппаНоменклатуры', objScheme: Catalog, objUID: 'GUIDГруппыНоменклатуры'}),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR'
+};
+
+export const ZakazClientaItem: ObjectSchemType = {
+  schemeName: 'Заказ клиента, строки',
+  collectionName: '',
+  queryField: '',
+  servC1Path: '',
+  exportProcName: 'EXP_ZAKAZ_ITEMS_IU',
+  objectPath: '',
+  prmMap: {
+    ID_ZAKAZ: createPrm({fName: 'PARENT_ID'}),
+    NOM_ID: createPrm({fName: 'Номенклатура', objScheme: Kontragent, objUID: 'GUIDНоменклатуры' }),
+    MEASURE_ID: createPrm({fName: 'ЕдиницаИзмеренияНоменклатуры', objScheme: Measure, objUID: 'GUIDКдиницыИзмерения' }),
+    CNT: createPrm({fName: 'КоличествоНоменклатуры'})
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR'
+};
+
 export const ZakazClienta: ObjectSchemType = {
   schemeName: 'Заказ клиента',
   collectionName: 'C1_ZC',
@@ -145,6 +182,11 @@ export const ZakazClienta: ObjectSchemType = {
     SROK_Z: createPrm({ fName: 'ДатаОтгрузкиЗаказаПокупателя' }),
     FIRM_ID: createPrm({ fName: 'КонтрагентЗаказаПокупателя', objScheme: Kontragent, objUID: 'GUIDКонтрагента' }),
   },
+  arrMap: {
+    DOC_ITEMS: createPrm({ fName: 'НоменклатураЗаказаПокупателя', objScheme: ZakazClientaItem}),
+  },
   idField: 'RES_ID',
   StrResField: 'RES_STR'
 };
+
+

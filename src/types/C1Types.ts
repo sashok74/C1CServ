@@ -58,6 +58,7 @@ export interface ObjectSchemType {
   exportProcName: string;
   objectPath: string;
   prmMap: prmMapType;
+  arrMap?: prmMapType;
   idField: string;
   StrResField: string
 }

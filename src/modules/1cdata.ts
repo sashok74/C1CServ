@@ -53,7 +53,13 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
 
   //получаем объект из 1С
   try {
-    const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
+    let res;
+    if (uid)
+      res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
+    else {
+      res = inObj; 
+      console.log('item: ',res);
+    }  
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(res.data, scheme.objectPath));
@@ -67,7 +73,23 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     ));
     //console.log(`${scheme.collectionName} result end:`, result);
     //все вложенные записи типа массив также добавляем в базу данных ERP
-
+    if (scheme.arrMap) {
+      for (const key in scheme.arrMap) {
+        if (scheme.arrMap[key].fName != null) {
+          const arrName = scheme.arrMap[key].fName;
+          if (arrName != null) {
+            const arrayItems:any[] = getValueByPath(res.data, arrName);
+            for (const elem of arrayItems) {
+             // для каждого вложенного элемента
+                elem["PARENT_ID"] = result.ref_id;
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore: Object is possibly 'null'.
+                await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
+            }  
+          }
+        }     
+      }   
+    }
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (Doc != null) {
       if (!result.finding) {
