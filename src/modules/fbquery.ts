@@ -21,7 +21,7 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
 // функция принимает массив имя параметра SQL запроса - путь до значения, размер текстового поля. 
 // и заполняет объект prm имя параметра - значение.
 export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmSQLType> {
-    console.log(`getPrmSQLType`);
+    console.log(`getPrmSQLType ${inArr}`);
     const prm: prmSQLType = {};
     for (const key in inArr) {
       if (inArr[key].fName != null) {
@@ -47,6 +47,7 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
           prm[`${key}_NESTED`] = res;
         }
         prm[key] = value;
+        console.log(`${key} - ${value}`);
       }
     }  
     return prm;
