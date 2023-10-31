@@ -161,7 +161,7 @@ export const ZakazClientaItem: ObjectSchemType = {
   objectPath: '',
   prmMap: {
     ID_ZAKAZ: createPrm({fName: 'PARENT_ID'}),
-    NOM_ID: createPrm({fName: 'Номенклатура', objScheme: Kontragent, objUID: 'GUIDНоменклатуры' }),
+    NOM_ID: createPrm({fName: 'Номенклатура', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
     MEASURE_ID: createPrm({fName: 'ЕдиницаИзмеренияНоменклатуры', objScheme: Measure, objUID: 'GUIDКдиницыИзмерения' }),
     CNT: createPrm({fName: 'КоличествоНоменклатуры'})
   },
