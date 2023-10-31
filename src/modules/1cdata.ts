@@ -16,7 +16,7 @@ async function execObjQuery(
   resFieldName: string,
   strResFieldName: string,
 ) {
-  console.log(`execObjQuery`);
+  console.log(`exec ${exportProcName}`);
   const result = { ref_id: null, err: {} };
   if (exportProcName) {
     const resExp = await db_query(exportProcName, 'READ_WRITE', prmSQLiu);
@@ -56,7 +56,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     let obj;
     if (uid) {
       const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
-      console.log('axios.get: ${scheme.servC1Path}');
+      console.log(`axios.get: ${scheme.servC1Path}`);
       obj = res.data;
     }  
     else {

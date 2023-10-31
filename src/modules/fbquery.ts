@@ -7,7 +7,7 @@ dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
 export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) {
-    console.log("db_query proc:", proc);
+    console.log(` --- db_query proc --- : ${proc} `);
     const res = await axios.post(`http://${DB_HOST}:3333/query`,
     {
         'procedureName': proc, 
@@ -21,8 +21,8 @@ export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) 
 // функция принимает массив имя параметра SQL запроса - путь до значения, размер текстового поля. 
 // и заполняет объект prm имя параметра - значение.
 export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmSQLType> {
-    console.log(`getPrmSQLType`);
-    console.log(data);
+    console.log(`getPrmSQLType arrayItehms - ${data.count()}`);
+    //console.log(data);
     const prm: prmSQLType = {};
     let path: string;
     for (const key in inArr) {
@@ -50,10 +50,10 @@ export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmS
           // @ts-ignore: Object is possibly 'null'.
             const res = await getObjectC1(inArr[key].objScheme, uid);
             value = res.ref_id;
-            prm[`${key}_NESTED`] = res;
+            //prm[`${key}_NESTED`] = res;
           }  else {
             value = null;
-            prm[`${key}_NESTED`] = null;
+            //prm[`${key}_NESTED`] = null;
           }
       
         }
