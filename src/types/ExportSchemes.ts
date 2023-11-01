@@ -118,7 +118,7 @@ function getCatalog(): ObjectSchemType {
       objectPath: 'response.ГруппаНоменклатуры',
       prmMap: {
         //ID: createPrm({}), // null
-        PID: createPrm({ fName: 'РодительГруппыНоменклатуры', objUID: 'GUIDРодителяГруппыНоменклатуры' }),
+        PID: createPrm({ fName: 'РодительГруппыНоменклатуры', objUID: 'GUIDГруппыНоменклатуры' }),
         CATALOG_NAME: createPrm({ fName: 'НаименованиеГруппыНоменклатуры', len: 100 }),
         KEYW: createPrm({ fName: '', len: 4 }),
       },
