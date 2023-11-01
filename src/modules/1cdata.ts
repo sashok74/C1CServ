@@ -105,7 +105,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     }
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (Doc != null) {
-      if (!result.finding) {
+      if (!result.finding && result.ref_id != null) {
         const isertRes: any = await Doc.insertOne(obj, result.ref_id);
         if (!isertRes.acknowledged) {
           // не удалось вставить запись в лог монго.
@@ -113,7 +113,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         } else {
           result.inserting = true;
         }
-      } else  if (result.ref_id != null) {
+      } else  if (result.finding && result.ref_id != null) {
         // делаем апдейт данных.. скорей всего только ref_id?
         result.err = { errCode: 30,  errDescription: 'ошибка обновления в MongoDB' };
       }
