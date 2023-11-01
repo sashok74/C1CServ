@@ -106,7 +106,7 @@ routes.post('/C1_Nomenklature', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 routes.get('/test_db', async (req: Request, res: Response) => {
-  const result = await db_query('SYS$GET_DB_INFO', 'READ_ONLY', {ECHO_STRING_IN: 'тест базы данных'});
+  const result = await db_query('SYS$GET_DB_INFO', 'READ_WRITE', {ECHO_STRING_IN: 'тест базы данных'});
   res.status(201).json(result);
 });
 
