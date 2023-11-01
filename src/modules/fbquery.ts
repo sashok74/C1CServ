@@ -23,6 +23,7 @@ function getKeydNotEmpty(obj: any, field: string) {
       keys.push(key);
     }
   }
+  console.log(keys);
   return keys;
 }
 
