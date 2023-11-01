@@ -23,7 +23,6 @@ function getKeydNotEmpty(obj: any, field: string) {
       keys.push(key);
     }
   }
-  console.log(keys);
   return keys;
 }
 
@@ -35,7 +34,9 @@ export async function getPrmSQLType(inArr: prmMapType, data: any): Promise<prmSQ
   const prm: prmSQLType = {};
   let path: string|null;
   const keys = getKeydNotEmpty(inArr, 'fName');
+  console.log(`keys: ${keys}`);
   for (const key in keys) {
+    console.log(`key: ${key}`);
     path = inArr[key].fName;
     console.log(`getPrmSQLType path = ${path}`);
     let value = getValueByPath(data, path);
