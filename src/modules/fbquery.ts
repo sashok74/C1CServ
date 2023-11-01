@@ -37,12 +37,15 @@ export async function getPrmSQLType(inArr: prmMapType, data: any): Promise<prmSQ
   const keys = getKeydNotEmpty(inArr, 'fName');
   for (const key in keys) {
     path = inArr[key].fName;
+    console.log(`getPrmSQLType path = ${path}`);
     let value = getValueByPath(data, path);
     if (isCharPrm (inArr,key)) {
       if (value) value = value.substring(0, inArr[key].len);
       else value = null;
+      console.log(`value = ${value}`);
     } else if (inArr[key].objScheme != null) {
       const uid = getValueByPath(value, inArr[key].objUID);
+      console.log(`getPrmSQLType uid = ${uid}`);
       if (uid) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore: Object is possibly 'null'.
