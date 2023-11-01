@@ -21,7 +21,7 @@ export const Measure: ObjectSchemType = {
   prmMap: {
    // ID: createPrm({ fName: '' }),
     MEASURE_NAME: createPrm({ fName: 'СокращениеЕдиницыИзмерения', len: 15 }),
-    MEASURE_COD: createPrm({ fName: 'КодЕдиницыИзмерения', len: 3 }),
+    MEASURE_CODE: createPrm({ fName: 'КодЕдиницыИзмерения', len: 3 }),
     DESCR: createPrm({ fName: 'НаименованиеЕдиницыИзмерения', len: 15 }),
   },
   idField: 'RES_ID',

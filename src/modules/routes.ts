@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getObjectC1 } from './1cdata.js'
 import { getArrayFromFile }  from './getDocLIst.js'
 import { db_query } from './fbquery.js'
-import { ZakazClienta, Kontragent, Catalog } from '../types/ExportSchemes.js';
+import { ZakazClienta, Kontragent, Catalog, City, Country, Measure, Storage, Nom } from '../types/ExportSchemes.js';
 
 const routes = Router();
 
@@ -46,6 +46,65 @@ routes.post('/C1_Catalog', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
+routes.post('/C1_City', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(City, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
+
+routes.post('/C1_Country', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(Country, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
+
+routes.post('/C1_Storage', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(Storage, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
+
+routes.post('/C1_Measure', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(Measure, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
+
+routes.post('/C1_Nomenklature', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(Nom, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
 routes.get('/test_db', async (req: Request, res: Response) => {
   const result = await db_query('SYS$GET_DB_INFO', 'READ_ONLY', {ECHO_STRING_IN: 'тест базы данных'});
   res.status(201).json(result);
