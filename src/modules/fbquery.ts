@@ -1,66 +1,60 @@
 import axios from 'axios';
 import * as dotenv from 'dotenv';
-import { prmSQLType, prmMapType } from '../types/C1Types.js';
+import { prmSQLType, prmMapType, isCharPrm } from '../types/C1Types.js';
 import { getValueByPath } from './objHelper.js';
 import { getObjectC1 } from './1cdata.js';
 dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
-export async function db_query(proc: string, trans = 'READ_WRITE',  prm:object) {
-    console.log(` --- db_query proc --- : ${proc} `);
-    const res = await axios.post(`http://${DB_HOST}:3333/query`,
-    {
-        'procedureName': proc, 
-        'transactonType': trans,
-        'prm': prm,
-    }
-    );
-    return res.data;
+export async function db_query(proc: string, trans = 'READ_WRITE', prm: object) {
+  console.log(` --- db_query proc --- : ${proc} `);
+  const res = await axios.post(`http://${DB_HOST}:3333/query`, {
+    procedureName: proc,
+    transactonType: trans,
+    prm: prm,
+  });
+  return res.data;
 }
 
-// функция принимает массив имя параметра SQL запроса - путь до значения, размер текстового поля. 
+function getKeydNotEmpty(obj: any, field: string) {
+  const keys = [];
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key) && obj[key][field]) {
+      keys.push(key);
+    }
+  }
+  return keys;
+}
+
+// функция принимает массив имя параметра SQL запроса - путь до значения, размер текстового поля.
 // и заполняет объект prm имя параметра - значение.
-export async function getPrmSQLType(inArr: prmMapType, data: any) : Promise<prmSQLType> {
-    console.log(`getPrmSQLType`);
-    //console.log(data);
-    const prm: prmSQLType = {};
-    let path: string;
-    for (const key in inArr) {
-      if (inArr[key].fName != null) {
+export async function getPrmSQLType(inArr: prmMapType, data: any): Promise<prmSQLType> {
+  console.log(`getPrmSQLType`);
+  //console.log(data);
+  const prm: prmSQLType = {};
+  let path: string|null;
+  const keys = getKeydNotEmpty(inArr, 'fName');
+  for (const key in keys) {
+    path = inArr[key].fName;
+    let value = getValueByPath(data, path);
+    if (isCharPrm (inArr,key)) {
+      if (value) value = value.substring(0, inArr[key].len);
+      else value = null;
+    } else if (inArr[key].objScheme != null) {
+      const uid = getValueByPath(value, inArr[key].objUID);
+      if (uid) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore: Object is possibly 'null'.
-        path = inArr[key].fName;
-        let value = getValueByPath(data, path);
-        if (
-          inArr[key].len > 0 &&
-          inArr[key].type === 'VARCHAR' &&
-          inArr[key].objScheme === null
-        ) {
-          if (value)
-            value = value.substring(0, inArr[key].len);
-          else 
-            value = null;
-        } else if (inArr[key].objScheme != null) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore: Object is possibly 'null'.
-          const uid = getValueByPath(value, inArr[key].objUID);
- 
-          if (uid) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore: Object is possibly 'null'.
-            const res = await getObjectC1(inArr[key].objScheme, uid);
-            value = res.ref_id;
-            //prm[`${key}_NESTED`] = res;
-          }  else {
-            value = null;
-            //prm[`${key}_NESTED`] = null;
-          }
-      
-        }
-        prm[key] = value;
-        console.log(`|  ${key} - ${path} - ${value}`);
+        const res = await getObjectC1(inArr[key].objScheme, uid);
+        value = res.ref_id;
+        //prm[`${key}_NESTED`] = res;
+      } else {
+        value = null;
+        //prm[`${key}_NESTED`] = null;
       }
-    }  
-    return prm;
+    }
+    prm[key] = value;
+    console.log(`|  ${key} - ${path} - ${value}`);
   }
-  
+  return prm;
+}

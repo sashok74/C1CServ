@@ -50,7 +50,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     }
     console.log(`${scheme.schemeName} find in mongo id: ${result._id}`);
   }
-
+  const prevRefId =  result.ref_id;
   //получаем объект из 1С
   try {
     let obj;
@@ -74,6 +74,10 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       scheme.idField,
       scheme.StrResField,
     ));
+    if (result.ref_id === null){
+      result.err = { errCode: 10,  errDescription: 'ошибка добавление записи в базу ERP' };
+      return result;
+    }
     //console.log(`${scheme.collectionName} result end:`, result);
     //все вложенные записи типа массив также добавляем в базу данных ERP
     if (scheme.arrMap) {
@@ -87,7 +91,11 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
                 elem["PARENT_ID"] = result.ref_id;
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore: Object is possibly 'null'.
-                await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
+                const prevResult = await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
+                if (prevResult.err && prevResult.err.errCode && prevResult.err.errCode != null){
+                  result.err = prevResult.err;
+                  return result;
+                }                
             }  
           }
         }     
@@ -99,17 +107,17 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         const isertRes: any = await Doc.insertOne(obj, result.ref_id);
         if (!isertRes.acknowledged) {
           // не удалось вставить запись в лог монго.
-          result.err = { errDescription: 'ошибка вставки в MongoDB' };
+          result.err = { errCode: 20, errDescription: 'ошибка вставки в MongoDB' };
         } else {
           result.inserting = true;
         }
-      } else {
+      } else  if (result.ref_id != prevRefId) {
         // делаем апдейт данных.. скорей всего только ref_id?
-        result.err = { errDescription: 'ошибка обновления в MongoDB' };
+        result.err = { errCode: 30,  errDescription: 'ошибка обновления в MongoDB' };
       }
     }
   } catch (err) {
-    result.err = err;
+    result.err ={ errCode: 40,  errDescription: 'Исключение', catchErr: err };
   }
   return result;
 }

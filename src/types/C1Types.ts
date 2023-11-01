@@ -39,6 +39,10 @@ export interface prmMapType {
   };
 }
 
+export function isCharPrm (prm:prmMapType, key:string):boolean {
+  return  prm[key].len > 0 && (prm[key].type === 'VARCHAR' || prm[key].type === 'CHAR' ) && prm[key].objScheme === null
+}
+
 export const createPrm = (options = {}) => {
     const defaultOptions = {
       fName: null,
