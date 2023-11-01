@@ -50,7 +50,9 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     }
     console.log(`${scheme.schemeName} find in mongo id: ${result._id}`);
   }
-  const prevRefId =  result.ref_id;
+  if (result.ref_id)
+       return result;
+
   //получаем объект из 1С
   try {
     let obj;
@@ -111,7 +113,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         } else {
           result.inserting = true;
         }
-      } else  if (result.ref_id != prevRefId) {
+      } else  if (result.ref_id != null) {
         // делаем апдейт данных.. скорей всего только ref_id?
         result.err = { errCode: 30,  errDescription: 'ошибка обновления в MongoDB' };
       }
