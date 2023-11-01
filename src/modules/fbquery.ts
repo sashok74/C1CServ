@@ -35,7 +35,7 @@ export async function getPrmSQLType(inArr: prmMapType, data: any): Promise<prmSQ
   let path: string|null;
   const keys = getKeydNotEmpty(inArr, 'fName');
   console.log(`keys: ${keys}`);
-  for (const key in keys) {
+  for (const key of keys) {
     console.log(`key: ${key}`);
     path = inArr[key].fName;
     console.log(`getPrmSQLType path = ${path}`);
