@@ -19,13 +19,13 @@ export const Measure: ObjectSchemType = {
   exportProcName: 'EXP_MEASURE_IU',
   objectPath: 'response.ЕдиницаИзмерения',
   prmMap: {
-   // ID: createPrm({ fName: '' }),
+    // ID: createPrm({ fName: '' }),
     MEASURE_NAME: createPrm({ fName: 'СокращениеЕдиницыИзмерения', len: 15 }),
     MEASURE_CODE: createPrm({ fName: 'КодЕдиницыИзмерения', len: 3 }),
     DESCR: createPrm({ fName: 'НаименованиеЕдиницыИзмерения', len: 15 }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 export const City: ObjectSchemType = {
@@ -40,7 +40,7 @@ export const City: ObjectSchemType = {
     CITY_NAME: createPrm({ fName: 'НаименованиеГорода', len: 50 }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 export const Country: ObjectSchemType = {
@@ -56,7 +56,7 @@ export const Country: ObjectSchemType = {
     COUNTRY_COD: createPrm({ fName: 'КодСтраны', len: 3 }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 export const Storage: ObjectSchemType = {
@@ -71,7 +71,7 @@ export const Storage: ObjectSchemType = {
     STORAGE_NAME: createPrm({ fName: 'НаименованиеСтруктурнойЕдиницы', len: 50 }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 export const Kontragent: ObjectSchemType = {
@@ -96,7 +96,7 @@ export const Kontragent: ObjectSchemType = {
     BANK_ACCOUNT_COUNTRY_COD: createPrm({ fName: 'КодСтраныБанковсогоСчетаКонтрагента', len: 3 }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 //SELECT RES_ID, RES_STR from EXP_CATALOG_IU(:ID, :PID, :CATALOG_NAME, :KEYW)
@@ -123,7 +123,7 @@ function getCatalog(): ObjectSchemType {
         KEYW: createPrm({ fName: '', len: 4 }),
       },
       idField: 'RES_ID',
-      StrResField: 'RES_STR'
+      StrResField: 'RES_STR',
     };
 
     catalog.prmMap.PID.objScheme = catalog;
@@ -142,14 +142,18 @@ export const Nom: ObjectSchemType = {
   objectPath: 'response.Номенклатура',
   prmMap: {
     //ID: createPrm({fName: ''}),
-    NAME_IZD: createPrm({fName: 'НаименованиеНоменклатуры', len: 150}),
-    KOD_IZD: createPrm({fName: 'КодНоменклатуры', len: 10}),
-    ART_IZD: createPrm({fName: 'АртикулНоменклатуры', len: 15}),
-    MEASURE_ID: createPrm({fName: 'ЕдиницаИзмеренияНоменклатуры', objScheme: Measure, objUID: 'GUIDКдиницыИзмерения'}),
-    CATALOG_ID: createPrm({fName: 'ГруппаНоменклатуры', objScheme: Catalog, objUID: 'GUIDГруппыНоменклатуры'}),
+    NAME_IZD: createPrm({ fName: 'НаименованиеНоменклатуры', len: 150 }),
+    KOD_IZD: createPrm({ fName: 'КодНоменклатуры', len: 10 }),
+    ART_IZD: createPrm({ fName: 'АртикулНоменклатуры', len: 15 }),
+    MEASURE_ID: createPrm({
+      fName: 'ЕдиницаИзмеренияНоменклатуры',
+      objScheme: Measure,
+      objUID: 'GUIDКдиницыИзмерения',
+    }),
+    CATALOG_ID: createPrm({ fName: 'ГруппаНоменклатуры', objScheme: Catalog, objUID: 'GUIDГруппыНоменклатуры' }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 export const ZakazClientaItem: ObjectSchemType = {
@@ -160,13 +164,17 @@ export const ZakazClientaItem: ObjectSchemType = {
   exportProcName: 'EXP_ZAKAZ_ITEMS_IU',
   objectPath: '',
   prmMap: {
-    ID_ZAKAZ: createPrm({fName: 'PARENT_ID'}),
-    NOM_ID: createPrm({fName: 'Номенклатура', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
-    MEASURE_ID: createPrm({fName: 'ЕдиницаИзмеренияНоменклатуры', objScheme: Measure, objUID: 'GUIDКдиницыИзмерения' }),
-    CNT: createPrm({fName: 'КоличествоНоменклатуры'})
+    ID_ZAKAZ: createPrm({ fName: 'PARENT_ID' }),
+    NOM_ID: createPrm({ fName: 'Номенклатура', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
+    MEASURE_ID: createPrm({
+      fName: 'ЕдиницаИзмеренияНоменклатуры',
+      objScheme: Measure,
+      objUID: 'GUIDКдиницыИзмерения',
+    }),
+    CNT: createPrm({ fName: 'КоличествоНоменклатуры' }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
 export const ZakazClienta: ObjectSchemType = {
@@ -183,10 +191,62 @@ export const ZakazClienta: ObjectSchemType = {
     FIRM_ID: createPrm({ fName: 'КонтрагентЗаказаПокупателя', objScheme: Kontragent, objUID: 'GUIDКонтрагента' }),
   },
   arrMap: {
-    DOC_ITEMS: createPrm({ fName: 'НоменклатураЗаказаПокупателя', objScheme: ZakazClientaItem}),
+    DOC_ITEMS: createPrm({ fName: 'НоменклатураЗаказаПокупателя', objScheme: ZakazClientaItem }),
   },
   idField: 'RES_ID',
-  StrResField: 'RES_STR'
+  StrResField: 'RES_STR',
 };
 
+export const BomItems: ObjectSchemType = {
+  schemeName: 'Спецификация, состав',
+  collectionName: '',
+  queryField: '',
+  servC1Path: '',
+  exportProcName: 'EXP_BOM_ITEMS_IU',
+  objectPath: '',
+  prmMap: {
+    PID: createPrm({ fName: 'PARENT_ID' }),
+    NOM_ID: createPrm({ fName: 'НоменклатураСостава', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
+    CNT: createPrm({ fName: 'Количество' }),
+    ORD: createPrm({ fName: 'НомерСтроки' }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
 
+export const BomRtItems: ObjectSchemType = {
+  schemeName: 'Спецификация, операции',
+  collectionName: '',
+  queryField: '',
+  servC1Path: '',
+  exportProcName: 'EXP_BOM_RT_ITEMS_IU',
+  objectPath: '',
+  prmMap: {
+    PID: createPrm({ fName: 'PARENT_ID' }),
+    OPER_NUM: createPrm({ fName: 'НомерСтроки' }),
+    DESCRIPT: createPrm({ fName: 'НоменклатураОпераций.НаименованиеНоменклатуры', len: 100 }),
+    OPER_TIME: createPrm({ fName: 'НормаВремени' }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
+
+export const Bom: ObjectSchemType = {
+  schemeName: 'Спецификация',
+  collectionName: 'C1_Bom',
+  queryField: 'response.Спецификация.GUIDСпецификации',
+  servC1Path: 'get_specification',
+  exportProcName: 'EXP_BOM_LIST_IU',
+  objectPath: 'response.Спецификация',
+  prmMap: {
+    NOM_ID: createPrm({ fName: 'НоменклатураCпецификации', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
+    DESCRIPT: createPrm({ fName: 'Комментарий', len: 128 }),
+    STR_ID: createPrm({ fName: 'УчастокПроизводства', objScheme: Storage, objUID: 'GUIDУчастка' }),
+  },
+  arrMap: {
+    BOM_ITEMS: createPrm({ fName: 'СоставСпецификации', objScheme: BomItems }),
+    RT_ITEMS: createPrm({ fName: 'ОперацииСпецификации', objScheme: BomRtItems }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
