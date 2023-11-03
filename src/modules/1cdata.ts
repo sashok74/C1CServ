@@ -76,7 +76,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       scheme.idField,
       scheme.StrResField,
     ));
-    if (result.ref_id === null){
+    if (result.ref_id === -1){
       result.err = { errCode: 10,  errDescription: 'ошибка добавление записи в базу ERP' };
       return result;
     }
@@ -105,7 +105,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     }
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (Doc != null) {
-      if (!result.finding && result.ref_id != null) {
+      if (!result.finding && result.ref_id != null && result.ref_id != -1) {
         const isertRes: any = await Doc.insertOne(obj, result.ref_id);
         if (!isertRes.acknowledged) {
           // не удалось вставить запись в лог монго.

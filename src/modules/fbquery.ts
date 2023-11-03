@@ -13,6 +13,7 @@ export async function db_query(proc: string, trans = 'READ_WRITE', prm: object) 
     transactonType: trans,
     prm: prm,
   });
+  console.log(` --- db_query status --- : ${res.status} `);
   return res.data;
 }
 
