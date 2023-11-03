@@ -143,7 +143,7 @@ export const Nom: ObjectSchemType = {
   prmMap: {
     //ID: createPrm({fName: ''}),
     NAME_IZD: createPrm({ fName: 'НаименованиеНоменклатуры', len: 150 }),
-    KOD_IZD: createPrm({ fName: 'КодНоменклатуры', len: 10 }),
+    KOD_IZD: createPrm({ fName: 'КодНоменклатуры', len: 15 }),
     ART_IZD: createPrm({ fName: 'АртикулНоменклатуры', len: 15 }),
     MEASURE_ID: createPrm({
       fName: 'ЕдиницаИзмеренияНоменклатуры',
