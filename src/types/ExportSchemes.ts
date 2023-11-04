@@ -156,6 +156,80 @@ export const Nom: ObjectSchemType = {
   StrResField: 'RES_STR',
 };
 
+
+export const BomRtItems: ObjectSchemType = {
+  schemeName: 'Спецификация, операции',
+  collectionName: '',
+  queryField: '',
+  servC1Path: '',
+  exportProcName: 'EXP_BOM_RT_ITEMS_IU',
+  objectPath: '',
+  prmMap: {
+    PID: createPrm({ fName: 'PARENT_ID' }),
+    OPER_NUM: createPrm({ fName: 'НомерСтроки' }),
+    DESCRIPT: createPrm({ fName: 'НоменклатураОпераций.НаименованиеНоменклатуры', len: 100 }),
+    OPER_TIME: createPrm({ fName: 'НормаВремени' }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
+
+let bom: ObjectSchemType;
+let bomItem: ObjectSchemType;
+
+function getBom(item: ObjectSchemType): ObjectSchemType {
+  return {
+    schemeName: 'Спецификация',
+    collectionName: 'C1_Bom',
+    queryField: 'response.Спецификация.GUIDСпецификации',
+    servC1Path: 'get_specification',
+    exportProcName: 'EXP_BOM_LIST_IU',
+    objectPath: 'response.Спецификация',
+    prmMap: {
+      NOM_ID: createPrm({ fName: 'НоменклатураCпецификации', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
+      DESCRIPT: createPrm({ fName: 'Комментарий', len: 128 }),
+      STR_ID: createPrm({ fName: 'УчастокПроизводства', objScheme: Storage, objUID: 'GUIDУчастка' }),
+    },
+    arrMap: {
+      BOM_ITEMS: createPrm({ fName: 'СоставСпецификации', objScheme: item }),
+      RT_ITEMS: createPrm({ fName: 'ОперацииСпецификации', objScheme: BomRtItems }),
+    },
+    idField: 'RES_ID',
+    StrResField: 'RES_STR',
+  } 
+}
+
+function getBomItems(): ObjectSchemType {
+  if (!bomItem) {
+    bomItem = {
+      schemeName: 'Спецификация, состав',
+      collectionName: '',
+      queryField: '',
+      servC1Path: '',
+      exportProcName: 'EXP_BOM_ITEMS_IU',
+      objectPath: '',
+      prmMap: {
+        PID: createPrm({ fName: 'PARENT_ID' }),
+        NOM_ID: createPrm({ fName: 'НоменклатураСостава', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
+        CNT: createPrm({ fName: 'Количество' }),
+        ORD: createPrm({ fName: 'НомерСтроки' }),
+        BOM_ID: createPrm({ fName: 'НоменклатураСостава.СпецфикацияДляНоменклатуры', objScheme: null, objUID: 'GUIDСпецификации' }),
+      },
+      idField: 'RES_ID',
+      StrResField: 'RES_STR',
+    };
+  }  
+
+  if (!bom) {
+    bom = getBom(bomItem);
+  }
+  bomItem.prmMap.BOM_ID.objScheme = bom;
+  return bomItem;
+}
+export const BomItems = getBomItems(); 
+export const Bom = getBom(BomItems);
+
+
 export const ZakazClientaItem: ObjectSchemType = {
   schemeName: 'Заказ клиента, строки',
   collectionName: '',
@@ -172,6 +246,7 @@ export const ZakazClientaItem: ObjectSchemType = {
       objUID: 'GUIDКдиницыИзмерения',
     }),
     CNT: createPrm({ fName: 'КоличествоНоменклатуры' }),
+    BOM_ID: createPrm({ fName: 'СпецификацияНоменклатуры', objScheme: null, objUID: 'GUIDСпецификации' }),
   },
   idField: 'RES_ID',
   StrResField: 'RES_STR',
@@ -197,56 +272,3 @@ export const ZakazClienta: ObjectSchemType = {
   StrResField: 'RES_STR',
 };
 
-export const BomItems: ObjectSchemType = {
-  schemeName: 'Спецификация, состав',
-  collectionName: '',
-  queryField: '',
-  servC1Path: '',
-  exportProcName: 'EXP_BOM_ITEMS_IU',
-  objectPath: '',
-  prmMap: {
-    PID: createPrm({ fName: 'PARENT_ID' }),
-    NOM_ID: createPrm({ fName: 'НоменклатураСостава', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
-    CNT: createPrm({ fName: 'Количество' }),
-    ORD: createPrm({ fName: 'НомерСтроки' }),
-  },
-  idField: 'RES_ID',
-  StrResField: 'RES_STR',
-};
-
-export const BomRtItems: ObjectSchemType = {
-  schemeName: 'Спецификация, операции',
-  collectionName: '',
-  queryField: '',
-  servC1Path: '',
-  exportProcName: 'EXP_BOM_RT_ITEMS_IU',
-  objectPath: '',
-  prmMap: {
-    PID: createPrm({ fName: 'PARENT_ID' }),
-    OPER_NUM: createPrm({ fName: 'НомерСтроки' }),
-    DESCRIPT: createPrm({ fName: 'НоменклатураОпераций.НаименованиеНоменклатуры', len: 100 }),
-    OPER_TIME: createPrm({ fName: 'НормаВремени' }),
-  },
-  idField: 'RES_ID',
-  StrResField: 'RES_STR',
-};
-
-export const Bom: ObjectSchemType = {
-  schemeName: 'Спецификация',
-  collectionName: 'C1_Bom',
-  queryField: 'response.Спецификация.GUIDСпецификации',
-  servC1Path: 'get_specification',
-  exportProcName: 'EXP_BOM_LIST_IU',
-  objectPath: 'response.Спецификация',
-  prmMap: {
-    NOM_ID: createPrm({ fName: 'НоменклатураCпецификации', objScheme: Nom, objUID: 'GUIDНоменклатуры' }),
-    DESCRIPT: createPrm({ fName: 'Комментарий', len: 128 }),
-    STR_ID: createPrm({ fName: 'УчастокПроизводства', objScheme: Storage, objUID: 'GUIDУчастка' }),
-  },
-  arrMap: {
-    BOM_ITEMS: createPrm({ fName: 'СоставСпецификации', objScheme: BomItems }),
-    RT_ITEMS: createPrm({ fName: 'ОперацииСпецификации', objScheme: BomRtItems }),
-  },
-  idField: 'RES_ID',
-  StrResField: 'RES_STR',
-};
