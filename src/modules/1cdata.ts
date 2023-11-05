@@ -50,8 +50,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     }
     console.log(`${scheme.schemeName} find in mongo id: ${result._id}`);
   }
-  if (result.ref_id)
-       return result;
+  if (result.ref_id) return result;
 
   //получаем объект из 1С
   try {
@@ -60,14 +59,13 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
       console.log(`axios.get: ${scheme.servC1Path}`);
       obj = res.data;
-      // костыль. добавим guid полем. 
+      // костыль. добавим guid полем.
       const elem = getValueByPath(obj, scheme.objectPath);
       if (elem) elem['GUID'] = uid;
-    }  
-    else {
-      obj = inObj; 
+    } else {
+      obj = inObj;
       console.log('nested object');
-    }  
+    }
     // проходим по полям scheme.prmMap и создаем объект для выполнения SQL запроса к ERP базе данных
     // параметры для sql запроса.
     result.prmSQLiu = await getPrmSQLType(scheme.prmMap, getValueByPath(obj, scheme.objectPath));
@@ -79,8 +77,8 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       scheme.idField,
       scheme.StrResField,
     ));
-    if (result.ref_id === -1){
-      result.err = { errCode: 10,  errDescription: 'ошибка добавление записи в базу ERP' };
+    if (result.ref_id === -1) {
+      result.err = { errCode: 10, errDescription: 'ошибка добавление записи в базу ERP' };
       return result;
     }
     //console.log(`${scheme.collectionName} result end:`, result);
@@ -88,30 +86,24 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
     if (scheme.arrMap) {
       for (const key in scheme.arrMap) {
         if (scheme.arrMap[key].fName != null) {
-          const arrName = scheme.objectPath  + '.' + scheme.arrMap[key].fName;
+          const arrName = scheme.objectPath + '.' + scheme.arrMap[key].fName;
           if (arrName != null) {
-            const arrayItems:any[] = getValueByPath(obj, arrName);
+            const arrayItems: any[] = getValueByPath(obj, arrName);
             for (const elem of arrayItems) {
-             // для каждого вложенного элемента
-                elem["PARENT_ID"] = result.ref_id;
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore: Object is possibly 'null'.
-                const prevResult = await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
-                if (prevResult.err && prevResult.err.errCode && prevResult.err.errCode != null){
-                  result.err = prevResult.err;
-                  return result;
-                }                
-            }  
+              // для каждого вложенного элемента
+              elem['PARENT_ID'] = result.ref_id;
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore: Object is possibly 'null'.
+              const prevResult = await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
+              if (prevResult.err && prevResult.err.errCode && prevResult.err.errCode != null) {
+                result.err = prevResult.err;
+                return result;
+              }
+            }
           }
-        }     
-      }   
+        }
+      }
     }
-    // эту часть выполняем после того как объект был сохранен. 
-    if (scheme.afterPostMap && result.ref_id && result.ref_id > 0) {
-      const postRes = await getPrmSQLType(scheme.afterPostMap, getValueByPath(obj, scheme.objectPath));
-      console.log(`${scheme.schemeName} postRes: ${postRes}`);
-    }
-
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (Doc != null) {
       if (!result.finding && result.ref_id != null && result.ref_id != -1) {
@@ -122,13 +114,18 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         } else {
           result.inserting = true;
         }
-      } else  if (result.finding && result.ref_id != null) {
+      } else if (result.finding && result.ref_id != null) {
         // делаем апдейт данных.. скорей всего только ref_id?
-        result.err = { errCode: 30,  errDescription: 'ошибка обновления в MongoDB' };
+        result.err = { errCode: 30, errDescription: 'ошибка обновления в MongoDB' };
       }
     }
+    // эту часть выполняем после того как объект был сохранен.
+    if (scheme.afterPostMap && result.ref_id && result.ref_id > 0) {
+      const postRes = await getPrmSQLType(scheme.afterPostMap, getValueByPath(obj, scheme.objectPath));
+      console.log(`${scheme.schemeName} postRes: ${postRes}`);
+    }
   } catch (err) {
-    result.err ={ errCode: 40,  errDescription: 'Исключение', catchErr: err };
+    result.err = { errCode: 40, errDescription: 'Исключение', catchErr: err };
   }
   return result;
 }
