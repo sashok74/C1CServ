@@ -151,7 +151,7 @@ export const NomStrCnt: ObjectSchemType = {
   collectionName: '',
   queryField: '',
   servC1Path: '',
-  exportProcName: 'EXP_NOM_STR_CNT_IU',
+  exportProcName: 'EXP_NOM_CNT_SET',
   objectPath: '',
   prmMap: {
     NOM_ID: createPrm({ fName: 'PARENT_ID' }),
