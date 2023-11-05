@@ -87,6 +87,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       for (const key in scheme.arrMap) {
         if (scheme.arrMap[key].fName != null) {
           const arrName = scheme.objectPath + '.' + scheme.arrMap[key].fName;
+          console.log(`arrName = ${arrName}`)
           if (arrName != null) {
             const arrayItems: any[] = getValueByPath(obj, arrName);
             for (const elem of arrayItems) {
