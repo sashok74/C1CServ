@@ -59,6 +59,7 @@ export class MongoDBCollection {
 
   async findOne(uid: any): Promise<FindResType> {
     const collection = await this.collection;
+    console.log(`findOne({ [${this.queryField}]: ${uid} })`)
     return collection
       .findOne({ [this.queryField]: uid })
       .then((data) => (data ? { ...data.res, _id: data._id } : { insert_at: null, ref_id: null, _id: null }));
