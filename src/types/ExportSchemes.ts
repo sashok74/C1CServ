@@ -134,7 +134,7 @@ function getCatalog(): ObjectSchemType {
 export const Catalog = getCatalog();
 
 export const NomID: ObjectSchemType = {
-  schemeName: 'Номенклатура из моного',
+  schemeName: 'Номенклатура из монго',
   collectionName: 'C1_Nom',
   queryField: 'response.Номенклатура.GUIDНоменклатуры',
   servC1Path: '',

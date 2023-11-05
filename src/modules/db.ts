@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { Db, MongoClient, Collection } from 'mongodb';
 import { FindResType } from '../types/C1Types.js';
 import * as Sentry from '@sentry/node';
+import { getValueByPath } from './objHelper.js';
 
 dotenv.config();
 const user_name = process.env.MONGODB_USER;
@@ -45,11 +46,14 @@ export class MongoDBCollection {
 
   async insertOne(doc: object, ref_id: string | null | number): Promise<unknown> {
     const collection = await this.collection;
+    const uid = getValueByPath(doc,this.queryField);
+    console.log(`insertOne guid: ${uid}`);
     return collection.insertOne({ ...doc, res: { insert_at: new Date(), ref_id: ref_id } });
   }
 
   async find(query: QueryType): Promise<unknown[]> {
     const collection = await this.collection;
+    console.log(`find({ [${this.queryField}]: query[${this.queryField}] })`)
     return collection.find({ [this.queryField]: query[this.queryField] }).toArray();
   }
 
