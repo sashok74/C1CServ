@@ -168,7 +168,7 @@ export const NomStrCnt: ObjectSchemType = {
 export const NomCnt: ObjectSchemType = {
   schemeName: 'Остаток номенклатуры по складам, список',
   collectionName: '',
-  queryField: '',
+  queryField: 'response.Остаток',
   servC1Path: 'get_quantity_nomenclature',
   exportProcName: 'EXP_ID_TO_RES_ID',
   objectPath: '',
