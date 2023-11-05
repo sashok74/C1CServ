@@ -168,10 +168,10 @@ export const NomStrCnt: ObjectSchemType = {
 export const NomCnt: ObjectSchemType = {
   schemeName: 'Остаток номенклатуры по складам, список',
   collectionName: '',
-  queryField: 'response.Остаток',
+  queryField: '',
   servC1Path: 'get_quantity_nomenclature',
   exportProcName: 'EXP_ID_TO_RES_ID',
-  objectPath: '',
+  objectPath: 'response.Остаток',
   prmMap: {
     ID: createPrm({ fName: 'GUID', objScheme: NomID, objUID: '' }),
   },
