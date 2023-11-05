@@ -133,6 +133,40 @@ function getCatalog(): ObjectSchemType {
 }
 export const Catalog = getCatalog();
 
+export const NomStrCnt: ObjectSchemType = {
+  schemeName: 'Остаток номенклатуры по складам',
+  collectionName: '',
+  queryField: '',
+  servC1Path: '',
+  exportProcName: 'EXP_NOM_STR_CNT_IU',
+  objectPath: '',
+  prmMap: {
+    NOM_ID: createPrm({ fName: 'PARENT_ID' }),
+    STR_ID: createPrm({ fName: 'СтруктурнаяЕдиница', objScheme: Storage, objUID: 'GUIDСтруктурнойЕдиницы' }),
+    CNT: createPrm({ fName: 'ОстатокНаСтруктурнойЕдинице' }),
+    REZ: createPrm({ fName: 'РезервНаСтруктурнойЕдинице' }),
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
+
+export const NomCnt: ObjectSchemType = {
+  schemeName: 'Остаток номенклатуры по складам, список',
+  collectionName: '',
+  queryField: '',
+  servC1Path: 'get_quantity_nomenclature',
+  exportProcName: 'EXP_ID_TO_RES_ID',
+  objectPath: '',
+  prmMap: {
+    ID: createPrm({ fName: 'GUID' }),
+  },
+  arrMap: {
+    CNT_ITEMS: createPrm({ fName: 'ОстатокПоСтруктурнымЕдиницам', objScheme: NomStrCnt }),
+  },  
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
+
 export const Nom: ObjectSchemType = {
   schemeName: 'Номенклатура',
   collectionName: 'C1_Nom',
@@ -152,10 +186,12 @@ export const Nom: ObjectSchemType = {
     }),
     CATALOG_ID: createPrm({ fName: 'ГруппаНоменклатуры', objScheme: Catalog, objUID: 'GUIDГруппыНоменклатуры' }),
   },
+  afterPostMap: {
+    ID: createPrm({ fName: 'GUIDНоменклатуры', objScheme: NomCnt, objUID: ''})  
+  },
   idField: 'RES_ID',
   StrResField: 'RES_STR',
 };
-
 
 export const BomRtItems: ObjectSchemType = {
   schemeName: 'Спецификация, операции',
@@ -271,4 +307,6 @@ export const ZakazClienta: ObjectSchemType = {
   idField: 'RES_ID',
   StrResField: 'RES_STR',
 };
+
+
 

@@ -60,6 +60,9 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
       console.log(`axios.get: ${scheme.servC1Path}`);
       obj = res.data;
+      // костыль. добавим guid полем. 
+      const elem = getValueByPath(obj, scheme.objectPath);
+      if (elem) elem['GUID'] = uid;
     }  
     else {
       obj = inObj; 
@@ -103,6 +106,12 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
         }     
       }   
     }
+    // эту часть выполняем после того как объект был сохранен. 
+    if (scheme.afterPostMap && result.ref_id && result.ref_id > 0) {
+      const postRes = await getPrmSQLType(scheme.afterPostMap, getValueByPath(obj, scheme.objectPath));
+      console.log(`${scheme.schemeName} postRes: ${postRes}`);
+    }
+
     //добавляем или заменяем в колекцию монго с уже вставленным в базу ERP документом добавив его id в ref_id
     if (Doc != null) {
       if (!result.finding && result.ref_id != null && result.ref_id != -1) {
