@@ -200,6 +200,9 @@ export const Nom: ObjectSchemType = {
       objUID: 'GUIDКдиницыИзмерения',
     }),
     CATALOG_ID: createPrm({ fName: 'ГруппаНоменклатуры', objScheme: Catalog, objUID: 'GUIDГруппыНоменклатуры' }),
+    OBJ_LIST_NAME: createPrm({ fName: 'ADD.obj_name', len: 150 }),
+    ATRR_LIST: createPrm({ fName: 'ADD.paramNames', len: 150 }),
+    VAL_LIST: createPrm({ fName: 'ADD.Values', len: 150 })
   },
   afterPostMap: {
     ID: createPrm({ fName: 'GUIDНоменклатуры', objScheme: NomCnt, objUID: ''})  

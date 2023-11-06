@@ -3,8 +3,10 @@ import { GetCollectionDriver } from '../controllers/c1_zc.route.js';
 import { FindResType, GetObjectType, ObjectSchemType, prmSQLType, createGetObjectType } from '../types/C1Types.js';
 import { db_query, getPrmSQLType } from './fbquery.js';
 import { getValueByPath } from './objHelper.js';
+import parseNomString from './parseNomenklature.js';
 
 import * as dotenv from 'dotenv';
+
 
 dotenv.config();
 
@@ -59,9 +61,15 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
       console.log(`axios.get: ${scheme.servC1Path}`);
       obj = res.data;
-      // костыль. добавим guid полем.
+      // костыль1. добавим guid полем.
       const elem = getValueByPath(obj, scheme.objectPath);
       if (elem) elem['GUID'] = uid;
+      // костыль2. добавим поле ADD a в него распарсенную номенклатуру 
+      // если есть поле 'НаименованиеНоменклатуры'.
+      if (elem && elem['НаименованиеНоменклатуры']){
+        elem['ADD'] = parseNomString(elem['НаименованиеНоменклатуры']);
+        console.log('ADD:',elem['ADD']);
+      }
     } else {
       obj = inObj;
       console.log('nested object');
