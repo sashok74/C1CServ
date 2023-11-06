@@ -67,6 +67,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       // костыль2. добавим поле ADD a в него распарсенную номенклатуру 
       // если есть поле 'НаименованиеНоменклатуры'.
       if (elem && elem['НаименованиеНоменклатуры']){
+        console.log('ADD name:',elem['НаименованиеНоменклатуры']);
         elem['ADD'] = parseNomString(elem['НаименованиеНоменклатуры']);
         console.log('ADD:',elem['ADD']);
       }
