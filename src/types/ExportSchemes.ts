@@ -154,12 +154,12 @@ export const NomStrCnt: ObjectSchemType = {
   exportProcName: 'EXP_NOM_CNT_SET',
   objectPath: '',
   prmMap: {
-    NOM_ID: createPrm({ fName: 'PARENT_ID' }),
-    PACK_NAME: createPrm({fName: '', len: 250}),
+    NOM_ID: createPrm({ fName: 'Номенклатура', objScheme: NomID, objUID: 'GUIDНоменклатуры' }),
+    PACK_NAME: createPrm({fName: 'Номенклатура.НаименованиеНоменклатуры', len: 250}),
     STR_ID: createPrm({ fName: 'СтруктурнаяЕдиница', objScheme: Storage, objUID: 'GUIDСтруктурнойЕдиницы' }),
     CNT_NEW: createPrm({ fName: 'ОстатокНаСтруктурнойЕдинице' }),
     RES_NEW: createPrm({ fName: 'РезервНаСтруктурнойЕдинице' }),
-    PRICE_NEW: createPrm({fName: 'ЦеныНоменклатуры.ЦеныНоменклатуры'})  
+    PRICE_NEW: createPrm({fName: 'ЦенaНоменклатурыюю.ЦеныНоменклатуры'})  
   },
   idField: 'RES_ID',
   StrResField: 'RES_STR',
@@ -200,6 +200,7 @@ export const Nom: ObjectSchemType = {
       objUID: 'GUIDКдиницыИзмерения',
     }),
     CATALOG_ID: createPrm({ fName: 'ГруппаНоменклатуры', objScheme: Catalog, objUID: 'GUIDГруппыНоменклатуры' }),
+//    BOM_ID: createPrm({ fName: 'НоменклатураСостава.СпецфикацияДляНоменклатуры', objScheme: null, objUID: 'GUIDСпецификации' }),
     OBJ_LIST_NAME: createPrm({ fName: 'ADD.obj_name', len: 150 }),
     ATRR_LIST: createPrm({ fName: 'ADD.params', len: 150 }),
     VAL_LIST: createPrm({ fName: 'ADD.values', len: 150 })
