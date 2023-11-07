@@ -61,11 +61,14 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
       const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
       console.log(`axios.get: ${scheme.servC1Path}`);
       obj = res.data;
-      // костыль1. добавим guid полем.
+      //сохраним в ответе guid по которому искали.
+      if (obj) obj['GUID'] = uid;
+      // костыль1. добавим guid полем к ответу.
       const elem = getValueByPath(obj, scheme.objectPath);
       if (elem) elem['GUID'] = uid;
       // костыль2. добавим поле ADD a в него распарсенную номенклатуру 
       // если есть поле 'НаименованиеНоменклатуры'.
+      // сделать как мидлваре.
       if (elem && elem['НаименованиеНоменклатуры']){
         console.log('ADD name:',elem['НаименованиеНоменклатуры']);
         elem['ADD'] = parseNomString(elem['НаименованиеНоменклатуры']);
