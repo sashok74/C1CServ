@@ -159,7 +159,7 @@ export const NomStrCnt: ObjectSchemType = {
     STR_ID: createPrm({ fName: 'СтруктурнаяЕдиница', objScheme: Storage, objUID: 'GUIDСтруктурнойЕдиницы' }),
     CNT_NEW: createPrm({ fName: 'ОстатокНаСтруктурнойЕдинице' }),
     RES_NEW: createPrm({ fName: 'РезервНаСтруктурнойЕдинице' }),
-    PRICE_NEW: createPrm({fName: 'ЦенaНоменклатуры.ЦеныНоменклатуры'})  
+    PRICE_NEW: createPrm({fName: 'ЦенaНоменклатуры'})  
   },
   idField: 'RES_ID',
   StrResField: 'RES_STR',
