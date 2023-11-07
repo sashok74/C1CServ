@@ -1,12 +1,20 @@
 export const regexPatterns = [
-    {
-      name: 'Конденсатор чип CC',
-      params: [
-        { name: 'параметр1', pattern: /\d+(,\d+)?[a-zA-Z]+F/i },
-        { name: 'параметр2', pattern: /[±]\d+%/i },
-        { name: 'параметр3', pattern: /\d+v/i },
-        { name: 'параметр4', pattern: /X\d+R|NPO|NP0/i },
-        { name: 'параметр5', pattern: /\(\d+\)/i }
-      ],
-    },
-  ];
+  {
+    name: 'Конденсатор чип CC',
+    params: [
+      { name: 'CC Емкость', pattern: /\d+(,\d+)?\s*[a-zA-Z]+F/i },
+      { name: 'CC Точность', pattern: /[±]\d+%/i },
+      { name: 'CC Напряжение', pattern: /\d+v/i },
+      { name: 'CC Код.', pattern: /[NXYZC]{1}[578P0]{1}[RO0VUG]{1}/i },
+      { name: 'CC Корпус', pattern: /\(\d+\)/i },
+    ],
+  },
+  {
+    name: 'Резистор чип RC',
+    params: [
+      { name: 'RC Корпус', pattern: /(\d{4})/i },
+      { name: 'RC Сопротивление', pattern: /(\d+(\.\d+)?[kKR]?|(\d+(\.\d+)?[R]))/i },
+      { name: 'RC Точность', pattern: /[±]\d+%/i },
+    ],
+  },
+];
