@@ -118,7 +118,7 @@ routes.post('/C1_Specification', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/get_quantity_nomenclature', async (req: Request, res: Response) => {
+routes.post('/C1_nomenclature_cnt', async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
   const DOC = req.body.DOC;
   const full_res:any[] = [];
