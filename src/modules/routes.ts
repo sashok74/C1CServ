@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getObjectC1 } from './1cdata.js'
 import { getArrayFromFile }  from './getDocLIst.js'
 import { db_query } from './fbquery.js'
-import { ZakazClienta, Kontragent, Catalog, City, Country, Measure, Storage, Nom, Bom } from '../types/ExportSchemes.js';
+import { ZakazClienta, Kontragent, Catalog, City, Country, Measure, Storage, Nom, Bom, NomCnt } from '../types/ExportSchemes.js';
 
 const routes = Router();
 
@@ -113,6 +113,18 @@ routes.post('/C1_Specification', async (req: Request, res: Response) => {
   let ind = 0;
   for (const uid of DOC) {
     const doc_json = await getObjectC1(Bom, uid);
+    full_res[ind++] = doc_json;
+  }
+  res.status(201).json(full_res);
+});
+
+routes.post('/get_quantity_nomenclature', async (req: Request, res: Response) => {
+  // сюда передаем список uid документов которые надо загрузить.
+  const DOC = req.body.DOC;
+  const full_res:any[] = [];
+  let ind = 0;
+  for (const uid of DOC) {
+    const doc_json = await getObjectC1(NomCnt, uid);
     full_res[ind++] = doc_json;
   }
   res.status(201).json(full_res);
