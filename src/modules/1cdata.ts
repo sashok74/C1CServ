@@ -30,6 +30,16 @@ async function execObjQuery(
   return result;
 }
 
+//поиск в коллекции по ref_id название колекции и ref_id передаем.
+export async function getItemGUID (collectionName: string, ref_id: number): Promise<unknown> {
+    //объект для работы с соответствующей колекцией
+    const Col = await GetCollectionDriver(collectionName, 'res.ref_id');
+    if (Col)
+      return Col.getOne(ref_id);
+    else
+      return null;
+}
+
 export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: any): Promise<GetObjectType> {
   console.log(`${scheme.schemeName} uid: ${uid}`);
   const result: GetObjectType = createGetObjectType({

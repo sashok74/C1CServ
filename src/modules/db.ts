@@ -64,4 +64,10 @@ export class MongoDBCollection {
       .findOne({ [this.queryField]: uid })
       .then((data) => (data ? { ...data.res, _id: data._id } : { insert_at: null, ref_id: null, _id: null }));
   }
+
+  async getOne(ref_id: number):  Promise<unknown> {
+    const collection = await this.collection;
+    console.log(`getOne({ [${this.queryField}]: ${ref_id} })`)
+    return collection.findOne({ [this.queryField]: ref_id })
+  }  
 }
