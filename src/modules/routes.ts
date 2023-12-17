@@ -4,13 +4,7 @@ import { getArrayFromFile }  from './getDocLIst.js'
 import { db_query } from './fbquery.js'
 import { ZakazClienta, Kontragent, Catalog, City, Country, Measure, Storage, Nom, Bom, NomCnt } from '../types/ExportSchemes.js';
 import { nomSchema, docSchema } from '../types/schemas.js';
-//import Ajv from 'ajv';
-import _Ajv from "ajv";
-
-const Ajv = _Ajv as unknown as typeof _Ajv.default;
-const ajv = new Ajv(); 
-const validateNom = ajv.compile(nomSchema);
-const validateDoc = ajv.compile(docSchema);
+import { validateBody } from './validateRequest.js';
 
 const routes = Router();
 
@@ -18,12 +12,9 @@ routes.get('/', (req, res) => {
   return res.json({ message: 'Hello World!!!' });
 });
 
-routes.post('/C1_ZC', async (req: Request, res: Response) => {
+routes.post('/C1_ZC', validateBody(docSchema), async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }  
-  const DOC = req.body.DOC;
+   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
   for (const uid of DOC) {
@@ -33,11 +24,8 @@ routes.post('/C1_ZC', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Partner', async (req: Request, res: Response) => {
+routes.post('/C1_Partner', validateBody(docSchema), async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -48,11 +36,8 @@ routes.post('/C1_Partner', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Catalog', async (req: Request, res: Response) => {
+routes.post('/C1_Catalog', validateBody(docSchema), async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -63,11 +48,8 @@ routes.post('/C1_Catalog', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_City', async (req: Request, res: Response) => {
+routes.post('/C1_City', validateBody(docSchema), async (req: Request, res: Response) => {
   // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -78,11 +60,7 @@ routes.post('/C1_City', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Country', async (req: Request, res: Response) => {
-  // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_Country', validateBody(docSchema), async (req: Request, res: Response) => {
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -93,11 +71,7 @@ routes.post('/C1_Country', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Storage', async (req: Request, res: Response) => {
-  // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_Storage', validateBody(docSchema), async (req: Request, res: Response) => {
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -108,11 +82,7 @@ routes.post('/C1_Storage', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Measure', async (req: Request, res: Response) => {
-  // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_Measure', validateBody(docSchema), async (req: Request, res: Response) => {
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -123,11 +93,7 @@ routes.post('/C1_Measure', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Nomenklature', async (req: Request, res: Response) => {
-  // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_Nomenklature', validateBody(docSchema), async (req: Request, res: Response) => {
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -138,11 +104,7 @@ routes.post('/C1_Nomenklature', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_Specification', async (req: Request, res: Response) => {
-  // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_Specification', validateBody(docSchema), async (req: Request, res: Response) => {
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -153,11 +115,7 @@ routes.post('/C1_Specification', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_nomenclature_cnt', async (req: Request, res: Response) => {
-  // сюда передаем список uid документов которые надо загрузить.
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_nomenclature_cnt', validateBody(docSchema), async (req: Request, res: Response) => {
   const DOC = req.body.DOC;
   const full_res:any[] = [];
   let ind = 0;
@@ -168,11 +126,7 @@ routes.post('/C1_nomenclature_cnt', async (req: Request, res: Response) => {
   res.status(201).json(full_res);
 });
 
-routes.post('/C1_set_nom_cnt_by_nom_id', async (req: Request, res: Response) => {
-  // сюда передаем список nom_id номенклатуры для которой надо установить количество .
-  if (!validateNom(req.body.NOM)) {
-    return res.status(400).json({ errors: validateNom.errors });
-  }
+routes.post('/C1_set_nom_cnt_by_nom_id', validateBody(nomSchema), async (req: Request, res: Response) => {
   const NOM = req.body.NOM;
   const full_res:any[] = [];
   let ind = 0;
