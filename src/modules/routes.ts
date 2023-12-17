@@ -5,9 +5,10 @@ import { db_query } from './fbquery.js'
 import { ZakazClienta, Kontragent, Catalog, City, Country, Measure, Storage, Nom, Bom, NomCnt } from '../types/ExportSchemes.js';
 import { nomSchema, docSchema } from '../types/schemas.js';
 //import Ajv from 'ajv';
+import _Ajv from "ajv";
 
-const Ajv = require("ajv")
-const ajv = new Ajv() 
+const Ajv = _Ajv as unknown as typeof _Ajv.default;
+const ajv = new Ajv(); 
 const validateNom = ajv.compile(nomSchema);
 const validateDoc = ajv.compile(docSchema);
 
