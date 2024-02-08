@@ -301,6 +301,7 @@ export const ZakazClientaItem: ObjectSchemType = {
       objUID: 'GUIDКдиницыИзмерения',
     }),
     CNT: createPrm({ fName: 'КоличествоНоменклатуры' }),
+    CNTW: createPrm({ fName: 'КоличествоНоменклатурыИзготовлено' }),
     BOM_ID: createPrm({ fName: 'СпецификацияНоменклатуры', objScheme: Bom, objUID: 'GUIDСпецификации' }),
   },
   idField: 'RES_ID',
