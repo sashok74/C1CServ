@@ -15,7 +15,7 @@ export const Measure: ObjectSchemType = {
   schemeName: 'Единицы измерения',
   collectionName: 'C1_Measure',
   queryField: 'response.ЕдиницаИзмерения.GUIDEдиницыИзмерения',
-  servC1Path: 'get_measure',
+  servC1Path: 'unf/hs/ht/get_measure',
   exportProcName: 'EXP_MEASURE_IU',
   objectPath: 'response.ЕдиницаИзмерения',
   prmMap: {
@@ -32,7 +32,7 @@ export const City: ObjectSchemType = {
   schemeName: 'Города',
   collectionName: 'C1_City',
   queryField: 'response.Город.GUIDГорода',
-  servC1Path: 'get_city',
+  servC1Path: 'unf/hs/ht/get_city',
   exportProcName: 'EXP_CITY_IU',
   objectPath: 'response.Город',
   prmMap: {
@@ -47,7 +47,7 @@ export const Country: ObjectSchemType = {
   schemeName: 'Страны',
   collectionName: 'C1_Country',
   queryField: 'response.Страна.GUIDСтраны',
-  servC1Path: 'get_country',
+  servC1Path: 'unf/hs/ht/get_country',
   exportProcName: 'EXP_COUNTRY_IU',
   objectPath: 'response.Страна',
   prmMap: {
@@ -63,7 +63,7 @@ export const Storage: ObjectSchemType = {
   schemeName: 'Участки',
   collectionName: 'C1_Storage',
   queryField: 'response.СтруктурноеПодразделение.GUIDСтруктурнойЕдиницы',
-  servC1Path: 'get_organizational_unit',
+  servC1Path: 'unf/hs/ht/get_organizational_unit',
   exportProcName: 'EXP_STORAGE_IU',
   objectPath: 'response.СтруктурноеПодразделение',
   prmMap: {
@@ -78,7 +78,7 @@ export const Kontragent: ObjectSchemType = {
   schemeName: 'Контрагент',
   collectionName: 'C1_Partner',
   queryField: 'response.Контрагент.GUIDКонтрагента',
-  servC1Path: 'get_partner',
+  servC1Path: 'unf/hs/ht/get_partner',
   exportProcName: 'EXP_FIRM_IU',
   objectPath: 'response.Контрагент',
   prmMap: {
@@ -113,7 +113,7 @@ function getCatalog(): ObjectSchemType {
       schemeName: 'Каталог номенклатуры',
       collectionName: 'C1_Catalog',
       queryField: 'response.ГруппаНоменклатуры.GUIDГруппыНоменклатуры',
-      servC1Path: 'get_nomenclature_group',
+      servC1Path: 'unf/hs/ht/get_nomenclature_group',
       exportProcName: 'EXP_CATALOG_IU',
       objectPath: 'response.ГруппаНоменклатуры',
       prmMap: {
@@ -133,6 +133,7 @@ function getCatalog(): ObjectSchemType {
 }
 export const Catalog = getCatalog();
 
+//для возврата RES_ID из C1_Nom по GUIDНоменклатуры
 export const NomID: ObjectSchemType = {
   schemeName: 'Номенклатура из монго',
   collectionName: 'C1_Nom',
@@ -169,7 +170,7 @@ export const NomCnt: ObjectSchemType = {
   schemeName: 'Остаток номенклатуры по складам, список',
   collectionName: '',
   queryField: '',
-  servC1Path: 'get_quantity_nomenclature',
+  servC1Path: 'unf/hs/ht/get_quantity_nomenclature',
   exportProcName: 'EXP_ID_TO_RES_ID',
   objectPath: 'response.Остаток',
   prmMap: {
@@ -186,7 +187,7 @@ export const Nom: ObjectSchemType = {
   schemeName: 'Номенклатура',
   collectionName: 'C1_Nom',
   queryField: 'response.Номенклатура.GUIDНоменклатуры',
-  servC1Path: 'get_nomenclature',
+  servC1Path: 'unf/hs/ht/get_nomenclature',
   exportProcName: 'EXP_NOM_IU',
   objectPath: 'response.Номенклатура',
   prmMap: {
@@ -194,6 +195,7 @@ export const Nom: ObjectSchemType = {
     NAME_IZD: createPrm({ fName: 'НаименованиеНоменклатуры', len: 150 }),
     KOD_IZD: createPrm({ fName: 'КодНоменклатуры', len: 15 }),
     ART_IZD: createPrm({ fName: 'АртикулНоменклатуры', len: 15 }),
+    BARCODE_IZD: createPrm({ fName: 'ШтрихкодНоменклатуры', len: 15 }),
     MEASURE_ID: createPrm({
       fName: 'ЕдиницаИзмеренияНоменклатуры',
       objScheme: Measure,
@@ -207,6 +209,44 @@ export const Nom: ObjectSchemType = {
   },
   afterPostMap: {
     ID: createPrm({ fName: 'GUIDНоменклатуры', objScheme: NomCnt, objUID: ''})  
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
+
+//для обновленя номенклатуры 1с УНФ
+export const NomUpdate: ObjectSchemType = {
+  schemeName: 'Номенклатура',
+  collectionName: '',
+  queryField: 'response.Номенклатура.GUIDНоменклатуры',
+  servC1Path: 'unf/hs/ht/get_nomenclature',
+  exportProcName: 'EXP_NOM_IU',
+  objectPath: 'response.Номенклатура',
+  prmMap: {
+    ID: createPrm({fName: 'SYNC_ID'}),
+    NAME_IZD: createPrm({ fName: 'НаименованиеНоменклатуры', len: 150 }),
+    KOD_IZD: createPrm({ fName: 'КодНоменклатуры', len: 15 }),
+    ART_IZD: createPrm({ fName: 'АртикулНоменклатуры', len: 15 }),
+    BARCODE_IZD: createPrm({ fName: 'ШтрихкодНоменклатуры', len: 15 })
+  },
+  idField: 'RES_ID',
+  StrResField: 'RES_STR',
+};
+
+//для обновленя номенклатуры 1с Бухгалтерия
+export const BH_NomUpdate: ObjectSchemType = {
+  schemeName: 'Номенклатура',
+  collectionName: 'C1_Nom',
+  queryField: 'response.Номенклатура.GUIDНоменклатуры',
+  servC1Path: 'bp_ht/hs/ht_bp/nomenclature',
+  exportProcName: 'EXP_NOM_IU',
+  objectPath: 'response.Номенклатура',
+  prmMap: {
+    ID: createPrm({fName: 'SYNC_ID'}),
+    NAME_IZD: createPrm({ fName: 'НаименованиеНоменклатуры', len: 150 }),
+    KOD_IZD: createPrm({ fName: 'КодНоменклатуры', len: 15 }),
+    ART_IZD: createPrm({ fName: 'АртикулНоменклатуры', len: 15 }),
+    BARCODE_IZD: createPrm({ fName: 'ШтрихкодНоменклатуры', len: 15 })
   },
   idField: 'RES_ID',
   StrResField: 'RES_STR',
@@ -237,7 +277,7 @@ function getBom(item: ObjectSchemType): ObjectSchemType {
     schemeName: 'Спецификация',
     collectionName: 'C1_Bom',
     queryField: 'response.Спецификация.GUIDСпецификации',
-    servC1Path: 'get_specification',
+    servC1Path: 'unf/hs/ht/get_specification',
     exportProcName: 'EXP_BOM_LIST_IU',
     objectPath: 'response.Спецификация',
     prmMap: {
@@ -312,7 +352,7 @@ export const ZakazClienta: ObjectSchemType = {
   schemeName: 'Заказ клиента',
   collectionName: 'C1_ZC',
   queryField: 'response.ЗаказПокупателя.GUIDЗаказаПокупателя',
-  servC1Path: 'get_order',
+  servC1Path: 'unf/hs/ht/get_order',
   exportProcName: 'EXP_ZAKAZ_IU',
   objectPath: 'response.ЗаказПокупателя',
   prmMap: {
@@ -328,5 +368,14 @@ export const ZakazClienta: ObjectSchemType = {
   StrResField: 'RES_STR',
 };
 
-
+// Информация об объектах
+export const objectInfoMap = new Map<string, ObjectSchemType>();
+objectInfoMap.set('Nom', Nom);
+objectInfoMap.set('Kontragent', Kontragent);
+objectInfoMap.set('Storage', Storage);
+objectInfoMap.set('Measure', Measure);
+objectInfoMap.set('City', City);
+objectInfoMap.set('Country', Country);
+objectInfoMap.set('ZakazClienta', ZakazClienta);
+objectInfoMap.set('Catalog', Catalog);
 

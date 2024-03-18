@@ -6,9 +6,11 @@ import { getObjectC1 } from './1cdata.js';
 dotenv.config();
 
 const DB_HOST = process.env.DB_HOST;
+const DB_PORT = process.env.DB_PORT;
+
 export async function db_query(proc: string, trans = 'READ_WRITE', prm: object) {
   console.log(` --- db_query proc --- : ${proc} `);
-  const res = await axios.post(`http://${DB_HOST}:3333/query`, {
+  const res = await axios.post(`http://${DB_HOST}:${DB_PORT}/query`, {
     procedureName: proc,
     transactonType: trans,
     prm: prm,

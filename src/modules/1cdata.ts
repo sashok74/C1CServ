@@ -40,7 +40,7 @@ export async function getItemGUID (collectionName: string, ref_id: number): Prom
       return null;
 }
 
-export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: any): Promise<GetObjectType> {
+export async function getObjectC1(scheme: ObjectSchemType, uid: string, sync_id?: number, inObj?: any): Promise<GetObjectType> {
   console.log(`${scheme.schemeName} uid: ${uid}`);
   const result: GetObjectType = createGetObjectType({
     Collection: scheme.collectionName,
@@ -68,14 +68,17 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
   try {
     let obj;
     if (uid) {
-      const res = await axios.get(`http://${C1_WEBSERVER}/unf/hs/ht/${scheme.servC1Path}/${uid}`);
+      const res = await axios.get(`http://${C1_WEBSERVER}/${scheme.servC1Path}/${uid}`);
       console.log(`axios.get: ${scheme.servC1Path}`);
       obj = res.data;
       //сохраним в ответе guid по которому искали.
       if (obj) obj['GUID'] = uid;
       // костыль1. добавим guid полем к ответу.
       const elem = getValueByPath(obj, scheme.objectPath);
-      if (elem) elem['GUID'] = uid;
+      if (elem) {
+         elem['GUID'] = uid;
+         elem['SYNC_ID'] = sync_id;
+      }  
       // костыль2. добавим поле ADD a в него распарсенную номенклатуру 
       // если есть поле 'НаименованиеНоменклатуры'.
       // сделать как мидлваре.
@@ -117,7 +120,7 @@ export async function getObjectC1(scheme: ObjectSchemType, uid: string, inObj?: 
               elem['PARENT_ID'] = result.ref_id;
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore: Object is possibly 'null'.
-              const prevResult = await getObjectC1(scheme.arrMap[key].objScheme, null, elem);
+              const prevResult = await getObjectC1(scheme.arrMap[key].objScheme, null, null, elem);
               if (prevResult.err && prevResult.err.errCode && prevResult.err.errCode != null) {
                 result.err = prevResult.err;
                 return result;
