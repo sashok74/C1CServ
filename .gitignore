@@ -3,3 +3,6 @@ node_modules
 *.log
 .env
 build
+test-platform/logs/
+test-platform/reports/
+reports/

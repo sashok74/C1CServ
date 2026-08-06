@@ -1,0 +1,8 @@
+{
+  "name": "order-basic",
+  "_comment": "Шаблон. Рабочий order-basic.json генерируется: node test-platform/scripts/pick-order.js --auto",
+  "order": { "guid": "<GUID заказа из c1_mock.C1_ZC>", "num": "<НомерЗаказаПокупателя>" },
+  "steps": [{ "route": "/C1_ZC", "body": { "DOC": ["<GUID заказа>"] } }],
+  "closure": {},
+  "unresolved": []
+}
