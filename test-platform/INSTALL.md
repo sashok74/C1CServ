@@ -244,8 +244,12 @@ sudo -u c1test bash -c 'set -a; . /etc/c1-test/platform.env; set +a; cd /opt/c1c
 ```
 
 ```bash
-# 3.0. (путь Б) распаковать комплектный набор из infra-репо
-tar xzf seed-data.tar.gz -C /srv/c1-test/seed && chown -R c1test:c1test /srv/c1-test/seed
+# 3.0. (путь Б) доставить и распаковать комплектный набор.
+#      Файл лежит в infra-репо на ansible-ctl:
+#        /opt/infra-ansible/roles/c1_test/files/seed-data.tar.gz
+#      Скопировать на контейнер (выполняется с ansible-ctl):
+#        sudo scp /opt/infra-ansible/roles/c1_test/files/seed-data.tar.gz root@<IP>:/tmp/
+tar xzf /tmp/seed-data.tar.gz -C /srv/c1-test/seed && chown -R c1test:c1test /srv/c1-test/seed
 
 # 3.1. Залить набор в c1_mock (по умолчанию — из /srv/c1-test/seed, прод не нужен)
 node test-platform/scripts/seed-mock.js
@@ -257,9 +261,17 @@ node test-platform/scripts/pick-order.js --auto
 node test-platform/scripts/gen-synthetic.js
 ```
 
+Пересеять мок заново (например, после обновления набора) — тем же плейбуком:
+
+```bash
+cd /opt/infra-ansible && sudo ansible-playbook playbooks/services/c1-test.yml --tags seed
+# таск идемпотентный: работает, только если база c1_mock пуста.
+# Принудительно: сначала  mongosh --quiet c1_mock --eval "db.dropDatabase()"
+```
+
 Обновление комплектного набора (нужен доступ к прод-журналу):
-`node test-platform/scripts/seed-mock.js --all`, затем перепаковать
-`roles/c1_test/files/seed-data.tar.gz` в infra-репо.
+`node test-platform/scripts/seed-mock.js --all`, затем перепаковать архив в infra-репо:
+`tar czf seed-data.tar.gz -C /srv/c1-test/seed .` → `roles/c1_test/files/`.
 
 ---
 
@@ -303,8 +315,15 @@ node test-platform/scripts/run-all.js --scenario test-platform/scenarios/order-s
 
 ```bash
 LAST=$(ls -1 /srv/c1-test/reports | grep '^run-' | tail -1)
-cat /srv/c1-test/reports/$LAST/report.md      # сводка: pass/fail/warn/known-issue + таблица не-pass
-grep -c '"status": "fail"' /srv/c1-test/reports/$LAST/report.json   # 0 = тест пройден
+
+# 1) человекочитаемая сводка (счётчики + таблица всех не-pass проверок):
+cat /srv/c1-test/reports/$LAST/report.md
+
+# 2) только счётчики — главный критерий приёмки fail == 0:
+python3 -c "import json;d=json.load(open('/srv/c1-test/reports/$LAST/report.json'));print(d['counts'])"
+
+# 3) были ли ошибки самого импорта (C1CServ прячет их в теле HTTP 201):
+python3 -c "import json;d=json.load(open('/srv/c1-test/reports/$LAST/run.json'));print('errors:',len(d['errors']));[print(e) for e in d['errors']]"
 ```
 
 Статусы: **pass** — совпало; **fail** — расхождение (тест провален); **warn** —
@@ -314,12 +333,18 @@ grep -c '"status": "fail"' /srv/c1-test/reports/$LAST/report.json   # 0 = тес
 ### 4.4. Проверить результаты ВСЕХ тестов
 
 ```bash
-# перечень всех прогонов со сводками:
-for d in /srv/c1-test/reports/run-*; do
-  echo "== $(basename $d) $(head -5 $d/report.md | tail -1)"; done
+# сводная таблица по всем прогонам (имя каталога + счётчики):
+for d in /srv/c1-test/reports/run-*/; do
+  printf '%s  ' "$(basename $d)"
+  python3 -c "import json,sys;print(json.load(open('$d/report.json'))['counts'])" 2>/dev/null || echo "(нет report.json)"
+done
 
-# только итоговые счётчики каждого прогона:
-grep -h -m1 -A2 '"counts"' /srv/c1-test/reports/run-*/report.json
+# найти прогоны, где есть провалы:
+for d in /srv/c1-test/reports/run-*/; do
+  python3 -c "
+import json;c=json.load(open('$d/report.json'))['counts']
+print('$(basename $d)', c) if c.get('fail',0) else None" 2>/dev/null
+done
 ```
 
 С Windows-станции отчёты копируются автоматически в `.\reports\run-<время>\`
@@ -327,11 +352,13 @@ grep -h -m1 -A2 '"counts"' /srv/c1-test/reports/run-*/report.json
 
 ### 4.5. Эталонные результаты (после установки должно получаться так)
 
+**Критерий приёмки в обоих сценариях: `fail = 0` и `errors: 0` в `run.json`.**
+
 | Сценарий | Ожидание |
 |---|---|
-| `order-synthetic` (чистый) | 93 pass / 0 fail / 0 warn / 0 known-issue |
-| `order-synthetic` повторно, без сброса | 93 pass / 0 fail (идемпотентность повторного экспорта) |
-| `order-basic` (после сброса) | 108 pass / 0 fail / 6 warn (404-дыры истории) / 0 known-issue |
+| `order-synthetic` (после сброса) | **93 pass / 0 fail / 0 warn / 0 known-issue** — набор детерминированный, числа обязаны совпасть |
+| `order-synthetic` повторно, **без сброса** | те же 93 pass / 0 fail — проверка идемпотентности повторного экспорта |
+| `order-basic` (после сброса) | **0 fail**; на эталонной установке было 108 pass / 6 warn. Абсолютные числа зависят от того, какой заказ выбрал `pick-order.js --auto` и сколько у него «дыр» в исторических данных — сверять надо `fail`, а не сумму |
 
-Если получено иное — смотреть таблицу не-pass в `report.md`, ответы сервиса в
+Если есть `fail` — смотреть таблицу не-pass в `report.md`, ответы сервиса в
 `run.json` (`err.errCode`) и журналы: `journalctl -u c1cserv-test -u fb-port -u c1-mock`.
