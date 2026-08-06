@@ -1,8 +1,15 @@
 # Запуск сквозного теста на c1-test с рабочей станции + забор отчёта.
+# По умолчанию делает ПОЛНЫЙ сброс (переклон базы): повторный экспорт заказа
+# в грязный клон падает из-за прод-дефекта EXP_ZAKAZ_IU (дубль C1_ZTOD).
 param(
     [string]$TestHost = "192.168.7.143",
-    [string]$Scenario = "test-platform/scenarios/order-basic.json"
+    [string]$Scenario = "test-platform/scenarios/order-basic.json",
+    [switch]$NoReset
 )
+if (-not $NoReset) {
+    & "$PSScriptRoot\reset.ps1"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
 $remote = "set -a; . /etc/c1-test/platform.env; set +a; cd /opt/c1cserv && node test-platform/scripts/run-all.js --scenario $Scenario"
 ssh raa@$TestHost "sudo -n -u c1test bash -c '$remote'"
 $exit = $LASTEXITCODE

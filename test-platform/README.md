@@ -63,15 +63,34 @@ node test-platform/scripts/run-all.js                # прогон + verify
 (например `mock-files/get_order/98c5cb6f-….json`) — файл имеет приоритет над mongo.
 Формат — как отдаёт 1С: `{ "response": { "ЗаказПокупателя": { … } } }`.
 
+## Важно: полный сброс перед каждым прогоном
+
+`EXP_ZAKAZ_IU` при **каждом** экспорте вставляет новый `DOC_HEADER` (op=7) и строку
+`C1_ZTOD` — повторный экспорт уже существующего заказа падает на
+`multiple rows in singleton select` в `EXP_ZAKAZ_ITEMS_IU` (прод-дефект; 11 исторических
+дублей `C1_ZTOD` в проде — следы таких повторов). Поэтому прогон всегда начинается
+с переклона базы: `win/run-test.ps1` делает это сам (пропустить: `-NoReset`), вручную —
+`playbooks/services/c1-test-reset.yml`. Шим переклона
+(`files/firebird/erp-api-c1-gateway-shim.sql` в infra-репо) дополнительно:
+восстанавливает `MET$PROC_IN_PARAM_INFO_S` (реестр MET$ копии заменён из techs),
+пересаживает `EXP_ZAKAZ_ITEMS_IU`/`EXP_NOM_CNT_SET` (потеряны в копии, вызовы
+`DOC_ITEMS_IU` приведены к её сигнатуре) и очищает заказный контур клона.
+
 ## Known issues (ожидаемые расхождения verify)
 
-- `BOMCUR_ID` в строках заказа всегда NULL: схемы передают `BOM_ID`, но в сигнатурах
-  `EXP_ZAKAZ_ITEMS_IU`/`EXP_BOM_ITEMS_IU` его нет — fb-port отбрасывает параметр
-  (`c1serv_doc/README.md` §12 п.13). Статус `known-issue`.
+- `BOM_ID` в `EXP_ZAKAZ_ITEMS_IU`/`EXP_BOM_ITEMS_IU` отбрасывается fb-port — параметра
+  нет в сигнатурах (`c1serv_doc/README.md` §12 п.13); при этом `BOMCUR_ID` связки
+  база вычисляет сама (заполнен = pass, NULL = known-issue).
+- `C1_LINKS_S` в копии падает с `string right truncation (10 vs 11)` на кодах 1С длиной
+  11 символов — сверка `KOD_IZD` для таких номенклатур помечается known-issue.
 - Дубли в `C1_LINKS` при повторных прогонах — известный дефект (§12 п. про C1_LINKS).
 - `MEASURE_ID` может не проставляться из-за исторической опечатки `GUIDКдиницыИзмерения`.
+- Даты (`DATA_Z`/`SROK_Z`) сверяются с допуском ±1 день: Firebird DATE приезжает из
+  fb-port как UTC-ISO и сдвигается относительно локальной даты 1С.
 - Остатки проверяются как «доведение вверх» (`CNT_AVAIL >= MOCK_STOCK_CNT`): клон уже
   содержит исторические остатки, `EXP_NOM_CNT_SET` уменьшение не обрабатывает.
+- «Дыры замыкания» (ссылки на объекты, которых нет в историческом журнале, включая
+  нулевой GUID) — мок отвечает 404, verify помечает warn; лечится файлами в `mock-files/`.
 
 ## Окружение
 
