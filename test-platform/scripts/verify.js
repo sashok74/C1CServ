@@ -203,15 +203,21 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Nom') ?? []) {
     const links = await fbq('C1_LINKS_S', { P_NOM_ID: ref_id });
     if (links.length === 0) report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'C1_LINKS', '≥ 1', 0, 'fail');
     else {
-      const kod = String(links[0].KOD_IZD ?? '').trim();
+      // код ищем среди всех связей: у номенклатуры законно две пары —
+      // (код, артикул карточки) и (код, артикул строки заказа); чипы могут
+      // дополнительно нести исторический код (параметрическая дедупликация)
+      const kods = links.map((l) => String(l.KOD_IZD ?? '').trim());
       const expKod = String(nom.КодНоменклатуры ?? '').trim();
-      report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'KOD_IZD', expKod, kod, kod === expKod ? 'pass' : 'fail');
-      if (links.length > 1) report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'строк C1_LINKS', 1, links.length, 'known-issue', 'дубли связей — известный дефект');
+      report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'KOD_IZD', expKod, kods.join(' | '), kods.includes(expKod) ? 'pass' : 'fail');
+      // настоящий дубль — одинаковая пара (KOD_IZD, ART_IZD)
+      const pairs = links.map((l) => `${String(l.KOD_IZD ?? '').trim()} ${String(l.ART_IZD ?? '').trim()}`);
+      const dup = pairs.length - new Set(pairs).size;
+      if (dup > 0) report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'одинаковых пар C1_LINKS', 0, dup, 'known-issue', 'дубли пар — дефект NULL-matching (закрывается Ф3/Ф4)');
     }
   } catch (err) {
     // единственная ожидаемая ошибка — усечение возвратного поля на длинных кодах 1С
     const known = /truncation/i.test(err.message);
-    report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'C1_LINKS_S', 'вызов', err.message, known ? 'known-issue' : 'fail', known ? 'C1_LINKS_S в копии: возвратное поле короче кода 1С (truncation 10 vs 11)' : '');
+    report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'C1_LINKS_S', 'вызов', err.message, known ? 'known-issue' : 'fail', known ? 'C1_LINKS_S: возвратное поле короче кода 1С (закрывается Ф1)' : '');
   }
   } catch (err) {
     report('номенклатура', 'C1_Nom', guid, ref_id, 'исключение', 'выполнение', err.message, 'fail');
