@@ -26,7 +26,7 @@ Windows-станция ──ssh──► LXC c1-test (192.168.7.143)           
 |---|---|
 | `mock-1c/server.js` | Мок 1С: `GET /unf/hs/ht/<путь>/<GUID>`. Источники по приоритету: файл из `MOCK_FILES_DIR/<путь>/<GUID>.json` → mongo `c1_mock` → 404. Остатки (`get_quantity_nomenclature`) синтезируются (`stock.js`). Каждый ответ пишется в `served.jsonl` — эталон «что отдали» |
 | `mock-1c/clean.js` | Очистка полей, дописанных C1CServ в журнал (`GUID`, `SYNC_ID`, `ADD`, `PARENT_ID`, `_id`, `res`) — мок отдаёт «как 1С» |
-| `scripts/seed-mock.js` | Засев `c1_mock` из прод-журнала: `--all` \| `--order <GUID>` \| `--load-only` |
+| `scripts/seed-mock.js` | Засев `c1_mock`: по умолчанию из готового набора (`seed-data.tar.gz` роли, прод не нужен); `--all` — обновить набор из прод-журнала; `--order <GUID>` — компактное замыкание |
 | `scripts/pick-order.js` | Выбор связного набора GUID (`--auto` / `--guid`), генерация сценария, отчёт о «дырах» замыкания |
 | `scripts/run-scenario.js` | Preflight-гейты + прогон ручек C1CServ. Ошибки ищутся в теле HTTP 201 (`err.errCode`) |
 | `scripts/verify.js` | Сверка A(лог мока) ↔ B(журнал `c1_data_test`) ↔ C(Firebird через fb-port, только `*_S`-процедуры, READ_ONLY). Отчёт `report.json`/`report.md`, exit≠0 при fail |

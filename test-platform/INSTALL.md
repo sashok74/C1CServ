@@ -14,7 +14,11 @@ MongoDB) на **абсолютно пустой LXC-контейнер** и пр
 |---|---|---|
 | Тестовый клон базы `erp_base_api_c1.fdb` (+ алиасы `erp_base_api_c1`, `db_hitek_api_c1`) | firebird5.home.lan | `isql localhost:erp_base_api_c1` → `SHOW DATABASE;` |
 | Секреты в vault infra-репо | ansible-ctl:/opt/infra-ansible | `inventory/group_vars/all/vault_c1_test.yml`: `vault_c1_test_mongo_password`, `vault_c1_test_prod_mongo_password`; `group_vars/all/vault.yml`: `vault_firebird5_sysdba_password` |
-| Прод-журнал Mongo для засева мока | LXC 104 (192.168.7.104), база `c1_data`, юзер `ind` | `mongosh mongodb://ind:***@192.168.7.104:27017/c1_data` |
+| Готовый набор данных мока | распространяется с ролью: `roles/c1_test/files/seed-data.tar.gz` (снимок прод-журнала от 2026-08-06) | входит в infra-репо — отдельно ничего не нужно |
+
+Прод-журнал Mongo (LXC 104) для установки **не требуется** — он нужен только чтобы
+обновить комплектный набор: `node test-platform/scripts/seed-mock.js --all` при
+доступе к проду, затем перепаковать `roles/c1_test/files/seed-data.tar.gz`.
 
 Клон создаётся/пересоздаётся плейбуком (шим и фикс-кандидаты применяются им же):
 
@@ -43,9 +47,10 @@ sudo ansible-playbook playbooks/services/c1-test.yml -e target_host=test-c1-test
 # удалить одноразовый: sudo ansible-playbook playbooks/infra/test-lxc.yml -e "service=c1-test state=absent"
 ```
 
-Плейбук делает всё из раздела 2 автоматически (создание LXC, пакеты, MongoDB,
-пользователи, клонирование репозиториев, сборка, env, systemd). Чистая установка
-занимает ~50 минут (apt + две сборки yarn). Дальше — раздел 3 (засев) и раздел 4 (тесты).
+Плейбук делает всё из разделов 2 и 3 автоматически (создание LXC, пакеты, MongoDB,
+пользователи, клонирование репозиториев, сборка, env, systemd, **распаковка комплектного
+набора, засев `c1_mock` и генерация обоих сценариев**). Чистая установка занимает
+~50 минут (apt + две сборки yarn). Дальше — сразу раздел 4 (тесты).
 
 ---
 
@@ -229,6 +234,9 @@ curl -s http://127.0.0.1:3738/test_db | grep -o erp_base_api_c1.fdb
 
 ## 3. Засев данных мока (один раз после установки)
 
+При установке путём А (ansible) этот раздел выполняется автоматически (таск `seed`).
+Вручную (путь Б) — распаковать комплектный набор и выполнить три команды.
+
 Все команды на контейнере выполняются так (окружение из platform.env):
 
 ```bash
@@ -236,8 +244,11 @@ sudo -u c1test bash -c 'set -a; . /etc/c1-test/platform.env; set +a; cd /opt/c1c
 ```
 
 ```bash
-# 3.1. Исторические данные: перелить прод-журнал в c1_mock (read-only к проду)
-node test-platform/scripts/seed-mock.js --all
+# 3.0. (путь Б) распаковать комплектный набор из infra-репо
+tar xzf seed-data.tar.gz -C /srv/c1-test/seed && chown -R c1test:c1test /srv/c1-test/seed
+
+# 3.1. Залить набор в c1_mock (по умолчанию — из /srv/c1-test/seed, прод не нужен)
+node test-platform/scripts/seed-mock.js
 
 # 3.2. Исторический сценарий: выбрать связный заказ
 node test-platform/scripts/pick-order.js --auto
@@ -245,6 +256,10 @@ node test-platform/scripts/pick-order.js --auto
 # 3.3. Синтетический сценарий: 3 заказа с объектами, которых нет в базе
 node test-platform/scripts/gen-synthetic.js
 ```
+
+Обновление комплектного набора (нужен доступ к прод-журналу):
+`node test-platform/scripts/seed-mock.js --all`, затем перепаковать
+`roles/c1_test/files/seed-data.tar.gz` в infra-репо.
 
 ---
 

@@ -1,10 +1,12 @@
-// Засев базы мока c1_mock из ПРОД-журнала c1_data (только чтение: find()).
+// Засев базы мока c1_mock. По умолчанию — из ГОТОВОГО набора jsonl в SEED_DIR
+// (набор распространяется с ролью c1_test: files/seed-data.tar.gz — доступ к
+// прод-журналу для развёртывания не нужен).
 // Режимы:
-//   --all            выгрузить все коллекции журнала в SEED_DIR/*.jsonl и залить в c1_mock
-//   --order <GUID>   только транзитивное замыкание одного заказа (компактный golden-набор)
-//   --load-only      залить уже имеющиеся jsonl из SEED_DIR без похода в прод
+//   (без аргументов) = --load-only: залить jsonl из SEED_DIR в c1_mock
+//   --all            обновить набор из ПРОД-журнала c1_data (только чтение) и залить
+//   --order <GUID>   только транзитивное замыкание одного заказа (компактный набор)
 // Окружение:
-//   SEED_SRC_URI  mongodb://ind:...@192.168.7.104:27017/c1_data?authSource=c1_data (не нужен при --load-only)
+//   SEED_SRC_URI  mongodb://ind:...@192.168.7.104:27017/c1_data?authSource=c1_data (нужен только для --all/--order)
 //   SEED_DST_URI  mongodb://ind:...@127.0.0.1:27017/c1_mock?authSource=c1_mock
 //   SEED_DIR      каталог jsonl (по умолчанию /srv/c1-test/seed)
 import fs from 'fs';
@@ -17,7 +19,7 @@ const SEED_DIR = process.env.SEED_DIR || '/srv/c1-test/seed';
 const COLLECTIONS = [...new Set(Object.values(pathMap).map((m) => m.collection))];
 
 const args = process.argv.slice(2);
-const mode = args.includes('--load-only') ? 'load-only' : args.includes('--order') ? 'order' : 'all';
+const mode = args.includes('--all') ? 'all' : args.includes('--order') ? 'order' : 'load-only';
 const orderGuid = mode === 'order' ? args[args.indexOf('--order') + 1] : null;
 
 function jsonlPath(collection) {
