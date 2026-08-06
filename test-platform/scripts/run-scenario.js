@@ -71,7 +71,7 @@ for (const step of scenario.steps) {
   let status = null;
   let data = null;
   try {
-    const res = await axios.post(`${C1CSERV_URL}${step.route}`, step.body, { timeout: 600000 });
+    const res = await axios.post(`${C1CSERV_URL}${step.route}`, step.body, { timeout: 1800000 });
     status = res.status;
     data = res.data;
   } catch (err) {

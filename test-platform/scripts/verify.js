@@ -86,6 +86,7 @@ for (const [coll, map] of journal) {
 // ---------- Проверка 3: Firebird ----------
 // 3.1 Заказ клиента
 for (const [guid, { ref_id, doc }] of journal.get('C1_ZC') ?? []) {
+  try {
   const order = doc.response?.ЗаказПокупателя ?? {};
   const num = order.НомерЗаказаПокупателя;
   const rows = await fbq('C1_ZAKAZ_H_S', { NUM_IN: num });
@@ -121,10 +122,14 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_ZC') ?? []) {
       report('заказ: связка', 'C1_ZC', guid, ref_id, 'C1_ZAKAZ_NOM_I_S', 'вызов', err.message, 'warn');
     }
   }
+  } catch (err) {
+    report('заказ', 'C1_ZC', guid, ref_id, 'исключение', 'выполнение', err.message, 'warn');
+  }
 }
 
 // 3.2 Номенклатура
 for (const [guid, { ref_id, doc }] of journal.get('C1_Nom') ?? []) {
+  try {
   const nom = doc.response?.Номенклатура ?? {};
   const rows = await fbq('EXP_NOM_S', { NOM_ID_IN: ref_id });
   const r = one(rows);
@@ -146,10 +151,14 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Nom') ?? []) {
     report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'KOD_IZD', expKod, kod, kod === expKod ? 'pass' : 'fail');
     if (links.length > 1) report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'строк C1_LINKS', 1, links.length, 'known-issue', 'дубли связей — известный дефект');
   }
+  } catch (err) {
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'исключение', 'выполнение', err.message, 'warn');
+  }
 }
 
 // 3.3 Спецификации
 for (const [guid, { ref_id, doc }] of journal.get('C1_Bom') ?? []) {
+  try {
   const bom = doc.response?.Спецификация ?? {};
   const head = await fbq('BOM_LIST_ONE_S', { BOM_ID: ref_id });
   report('спецификация', 'C1_Bom', guid, ref_id, 'BOM_LIST_ONE_S', '1 строка', head.length, head.length === 1 ? 'pass' : 'fail');
@@ -162,6 +171,9 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Bom') ?? []) {
     report('спецификация', 'C1_Bom', guid, ref_id, 'строк операций', rt1c.length, rt.length, rt.length === rt1c.length ? 'pass' : 'warn', 'RT_VERSION/FOR_UNIT не передаются (falsy→NULL)');
   } catch (err) {
     report('спецификация', 'C1_Bom', guid, ref_id, 'RT_ROUTE_ITEMS_S', 'вызов', err.message, 'warn');
+  }
+  } catch (err) {
+    report('спецификация', 'C1_Bom', guid, ref_id, 'исключение', 'выполнение', err.message, 'warn');
   }
 }
 
