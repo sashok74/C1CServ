@@ -10,9 +10,12 @@ export class ServedLog {
 
   write(entry) {
     const line = JSON.stringify({ ts: new Date().toISOString(), ...entry });
-    fs.appendFile(this.file, line + '\n', (err) => {
-      if (err) console.error('servedLog append error:', err.message);
-    });
+    // синхронно: лог — оракул verify, потерянная строка = ложный результат сверки
+    try {
+      fs.appendFileSync(this.file, line + '\n');
+    } catch (err) {
+      console.error('servedLog append error:', err.message);
+    }
   }
 
   readSince(sinceTs) {

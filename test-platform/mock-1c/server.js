@@ -39,8 +39,13 @@ if (MONGO_URI) {
   console.log('mock-1c: MOCK_MONGO_URI не задан — режим только файлов');
 }
 
+const GUID_RE = /^[0-9a-fA-F-]{1,64}$/;
+
 function readFileSource(endpoint, guid) {
-  const file = path.join(FILES_DIR, endpoint, `${guid}.json`);
+  const base = path.resolve(FILES_DIR, endpoint);
+  const file = path.resolve(base, `${guid}.json`);
+  // защита от path traversal (%2F в :guid декодируется Express'ом)
+  if (!file.startsWith(base + path.sep)) return null;
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
@@ -91,6 +96,10 @@ async function stockHandler(guid) {
 
 app.get('/unf/hs/ht/:endpoint/:guid', async (req, res) => {
   const { endpoint, guid } = req.params;
+  if (!GUID_RE.test(guid)) {
+    log.write({ path: endpoint, guid: String(guid).slice(0, 64), status: 400, source: 'bad-guid' });
+    return res.status(400).json({ error: 'bad guid' });
+  }
   try {
     let doc = null;
     let source = null;

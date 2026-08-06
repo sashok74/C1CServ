@@ -43,6 +43,10 @@ async function preflight() {
   const client = await MongoClient.connect(TEST_JOURNAL_URI);
   try {
     const db = client.db();
+    // защита от случайной работы (и дропа) по прод-журналу
+    if (!db.databaseName.endsWith('_test')) {
+      throw new Error(`СТОП: журнал ${db.databaseName} не тестовый (имя должно оканчиваться на _test)`);
+    }
     const collections = await db.listCollections().toArray();
     let total = 0;
     for (const { name } of collections) total += await db.collection(name).countDocuments();
@@ -79,6 +83,11 @@ for (const step of scenario.steps) {
     data = err.response?.data ?? { error: err.message };
   }
   run.steps.push({ route: step.route, body: step.body, status, response: data });
+
+  // транспортные сбои и не-2xx — тоже ошибки прогона (иначе прогон "зелёный" без единого импорта)
+  if (typeof status !== 'number' || status < 200 || status >= 300) {
+    run.errors.push({ route: step.route, at: 'http', err: { errCode: 'http', errDescription: String(status) } });
+  }
 
   // ВАЖНО: ошибки C1CServ прячутся в теле HTTP 201 (err.errCode 10/20/30/40)
   const findErrors = (node, trail) => {

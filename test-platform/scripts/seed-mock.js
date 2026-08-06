@@ -67,6 +67,10 @@ async function loadToMock() {
   const client = await MongoClient.connect(dstUri);
   try {
     const db = client.db();
+    // засев перезаписывает коллекции — защищаемся от прод-базы
+    if (db.databaseName !== 'c1_mock') {
+      throw new Error(`отказ: назначение засева ${db.databaseName}, ожидается c1_mock`);
+    }
     for (const coll of COLLECTIONS) {
       const file = jsonlPath(coll);
       if (!fs.existsSync(file)) continue;

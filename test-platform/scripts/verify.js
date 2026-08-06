@@ -52,6 +52,10 @@ const served = fs.existsSync(servedFile)
   : [];
 const servedOk = served.filter((e) => e.status === 200 && e.path !== STOCK_PATH);
 const servedMiss = served.filter((e) => e.status === 404);
+if (served.length === 0) {
+  // без лога мока сверка A→B невозможна — это провал верификации, а не пустой прогон
+  report('оракул', 'мок', '-', null, 'served.jsonl', 'записи с ' + run.startedAt, 'пусто/нет файла', 'fail', `лог: ${servedFile}`);
+}
 
 // ---------- B: журнал ----------
 const journal = new Map(); // collection -> Map<guid, {ref_id, doc}>
@@ -129,11 +133,11 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_ZC') ?? []) {
       // может вычислить актуальную спецификацию сама — заполненный BOMCUR_ID это pass
       report('заказ: связка', 'C1_ZC', guid, ref_id, 'BOMCUR_ID', 'NULL или вычислен БД', bomcur, bomcur == null ? 'known-issue' : 'pass', 'BOM_ID отбрасывается процедурой; связка вычисляется БД');
     } catch (err) {
-      report('заказ: связка', 'C1_ZC', guid, ref_id, 'C1_ZAKAZ_NOM_I_S', 'вызов', err.message, 'warn');
+      report('заказ: связка', 'C1_ZC', guid, ref_id, 'C1_ZAKAZ_NOM_I_S', 'вызов', err.message, 'fail');
     }
   }
   } catch (err) {
-    report('заказ', 'C1_ZC', guid, ref_id, 'исключение', 'выполнение', err.message, 'warn');
+    report('заказ', 'C1_ZC', guid, ref_id, 'исключение', 'выполнение', err.message, 'fail');
   }
 }
 
@@ -163,10 +167,12 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Nom') ?? []) {
       if (links.length > 1) report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'строк C1_LINKS', 1, links.length, 'known-issue', 'дубли связей — известный дефект');
     }
   } catch (err) {
-    report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'C1_LINKS_S', 'вызов', err.message, 'known-issue', 'C1_LINKS_S в копии: возвратное поле короче кода 1С (truncation 10 vs 11)');
+    // единственная ожидаемая ошибка — усечение возвратного поля на длинных кодах 1С
+    const known = /truncation/i.test(err.message);
+    report('связь 1С↔HiTek', 'C1_Nom', guid, ref_id, 'C1_LINKS_S', 'вызов', err.message, known ? 'known-issue' : 'fail', known ? 'C1_LINKS_S в копии: возвратное поле короче кода 1С (truncation 10 vs 11)' : '');
   }
   } catch (err) {
-    report('номенклатура', 'C1_Nom', guid, ref_id, 'исключение', 'выполнение', err.message, 'warn');
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'исключение', 'выполнение', err.message, 'fail');
   }
 }
 
@@ -184,10 +190,10 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Bom') ?? []) {
     const rt = await fbq('RT_ROUTE_ITEMS_S', { BOM_ID: ref_id });
     report('спецификация', 'C1_Bom', guid, ref_id, 'строк операций', rt1c.length, rt.length, rt.length === rt1c.length ? 'pass' : 'warn', 'RT_VERSION/FOR_UNIT не передаются (falsy→NULL)');
   } catch (err) {
-    report('спецификация', 'C1_Bom', guid, ref_id, 'RT_ROUTE_ITEMS_S', 'вызов', err.message, 'warn');
+    report('спецификация', 'C1_Bom', guid, ref_id, 'RT_ROUTE_ITEMS_S', 'вызов', err.message, 'fail');
   }
   } catch (err) {
-    report('спецификация', 'C1_Bom', guid, ref_id, 'исключение', 'выполнение', err.message, 'warn');
+    report('спецификация', 'C1_Bom', guid, ref_id, 'исключение', 'выполнение', err.message, 'fail');
   }
 }
 
@@ -208,7 +214,7 @@ if (storageRef > 0) {
       const avail = Number(rows[0]?.CNT_AVAIL ?? NaN);
       report('остатки', 'C1_Nom', guid, ref_id, 'CNT_AVAIL', `>= ${STOCK_CNT}`, avail, avail >= STOCK_CNT ? 'pass' : 'fail', 'EXP_NOM_CNT_SET доводит только вверх');
     } catch (err) {
-      report('остатки', 'C1_Nom', guid, ref_id, 'NOM_AVAIL_S', 'вызов', err.message, 'warn');
+      report('остатки', 'C1_Nom', guid, ref_id, 'NOM_AVAIL_S', 'вызов', err.message, 'fail');
     }
   }
 } else {
