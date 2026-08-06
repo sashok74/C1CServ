@@ -142,15 +142,23 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_ZC') ?? []) {
   for (const r of rowsI) {
     if (!(r.NOM_ID > 0)) report('заказ: строки', 'C1_ZC', guid, ref_id, 'NOM_ID', '> 0', r.NOM_ID, 'fail');
   }
-  // связка строк: BOMCUR_ID заведомо NULL — BOM_ID отбрасывается EXP_ZAKAZ_ITEMS_IU (known-issue)
+  // связка строк со спецификацией: BOMCUR_ID вычисляется базой (bom_get_current
+  // по main_bom) — сверяем построчно там, где в 1С задана СпецификацияНоменклатуры
   const idField = rowsI[0] ? Object.keys(rowsI[0]).find((k) => /^ID/.test(k) && rowsI[0][k] > 0) : null;
-  if (idField) {
+  for (const item of items1c) {
+    const bomGuid = item.СпецификацияНоменклатуры?.GUIDСпецификации;
+    if (!bomGuid || !idField) continue;
+    const nomRef = journal.get('C1_Nom')?.get(item.Номенклатура?.GUIDНоменклатуры)?.ref_id ?? null;
+    const expBom = journal.get('C1_Bom')?.get(bomGuid)?.ref_id ?? null;
+    const row = rowsI.find((r) => r.NOM_ID === nomRef);
+    if (!row) {
+      report('заказ: связка', 'C1_ZC', guid, ref_id, 'строка со спецификацией', `NOM_ID=${nomRef}`, 'не найдена', 'fail');
+      continue;
+    }
     try {
-      const nomI = await fbq('C1_ZAKAZ_NOM_I_S', { ID_ZAKAZ_I_ID: rowsI[0][idField] });
+      const nomI = await fbq('C1_ZAKAZ_NOM_I_S', { ID_ZAKAZ_I_ID: row[idField] });
       const bomcur = nomI[0]?.BOMCUR_ID ?? null;
-      // параметр BOM_ID процедурой отбрасывается (README §12 п.13), но база
-      // может вычислить актуальную спецификацию сама — заполненный BOMCUR_ID это pass
-      report('заказ: связка', 'C1_ZC', guid, ref_id, 'BOMCUR_ID', 'NULL или вычислен БД', bomcur, bomcur == null ? 'known-issue' : 'pass', 'BOM_ID отбрасывается процедурой; связка вычисляется БД');
+      report('заказ: связка', 'C1_ZC', guid, ref_id, 'BOMCUR_ID', expBom, bomcur, bomcur === expBom ? 'pass' : 'known-issue', 'вычисляется БД по main_bom (параметр BOM_ID процедурой отбрасывается)');
     } catch (err) {
       report('заказ: связка', 'C1_ZC', guid, ref_id, 'C1_ZAKAZ_NOM_I_S', 'вызов', err.message, 'fail');
     }
