@@ -7,8 +7,12 @@ import { nomSchema, docSchema, refSchema, c1CUID } from '../types/schemas.js';
 import { validateBody } from './validateRequest.js';
 import { getValueByPath } from './objHelper.js';
 import { erpNewNom, erpNewCatalog} from './fromERP.js'
+import exp2Routes from './exp2.js';
 
 const routes = Router();
+
+// выгрузка HiTek -> 1С:Бухгалтерия (этап 2), маршруты /exp2/v1/*
+routes.use(exp2Routes);
 
 routes.get('/', (req, res) => {
   return res.json({ message: 'Hello World!!!' });
