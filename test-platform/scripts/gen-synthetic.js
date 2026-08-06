@@ -214,7 +214,10 @@ const scenario = {
       noms.map((x) => [
         x.guid,
         {
-          name: x.name,
+          // чип-компоненты (exact:false): HiTek канонизирует имя из распарсенных
+          // параметров («Конденсатор чип CC-100nF-…») — сверяем только префикс паттерна
+          name: x.exact ? x.name : null,
+          namePrefix: x.exact ? null : x.name.split(' ').slice(0, 3).join(' '),
           kod: x.kod,
           catalogName: x.exact ? catalogs[x.cat].name : null,
           measureName: x.exact ? measures[x.mea].short : null,

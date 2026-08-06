@@ -173,7 +173,11 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Nom') ?? []) {
   const exNom = expect.noms?.[guid];
   const expName = String(nom.НаименованиеНоменклатуры ?? '').substring(0, 150).trim();
   const actName = String(r.NOM_NAME ?? '').trim();
-  report('номенклатура', 'C1_Nom', guid, ref_id, 'NOM_NAME', expName, actName, actName === expName ? 'pass' : exNom ? 'fail' : 'warn', exNom ? 'синтетика: имя обязано совпасть' : 'имя может преобразовываться (OBJ_LIST/ADD)');
+  if (exNom?.namePrefix) {
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'NOM_NAME', `${exNom.namePrefix}…`, actName, actName.startsWith(exNom.namePrefix) ? 'pass' : 'fail', 'имя канонизируется из распарсенных параметров (ADD)');
+  } else {
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'NOM_NAME', expName, actName, actName === expName ? 'pass' : exNom ? 'fail' : 'warn', exNom ? 'синтетика: имя обязано совпасть' : 'имя может преобразовываться (OBJ_LIST/ADD)');
+  }
   if (exNom?.catalogName) {
     const act = String(r.CATALOG_NAME ?? '').trim();
     report('номенклатура', 'C1_Nom', guid, ref_id, 'CATALOG_NAME', exNom.catalogName, act, act === exNom.catalogName ? 'pass' : 'fail', 'группа создана с нуля');
