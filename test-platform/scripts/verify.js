@@ -18,6 +18,14 @@ const runFile = runArg.endsWith('.json') ? runArg : path.join(runArg, 'run.json'
 const runDir = path.dirname(runFile);
 const run = JSON.parse(fs.readFileSync(runFile, 'utf8'));
 
+// точные ожидания синтетического сценария (gen-synthetic.js) — если есть
+let expect = {};
+try {
+  expect = JSON.parse(fs.readFileSync(run.scenarioFile, 'utf8')).expect || {};
+} catch {
+  /* сценарий без expect — сверки остаются эвристическими */
+}
+
 const TEST_JOURNAL_URI = process.env.TEST_JOURNAL_URI;
 if (!TEST_JOURNAL_URI) throw new Error('TEST_JOURNAL_URI не задан');
 const MOCK_LOG_DIR = process.env.MOCK_LOG_DIR || path.resolve('test-platform', 'logs');
@@ -114,6 +122,17 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_ZC') ?? []) {
   const sz = datePart(order.ДатаОтгрузкиЗаказаПокупателя);
   report('заказ: шапка', 'C1_ZC', guid, ref_id, 'SROK_Z', sz, datePart(h.SROK_Z), sameDay(datePart(h.SROK_Z), sz) ? 'pass' : 'fail', 'допуск ±1 день (таймзона fb-port)');
 
+  const exOrder = expect.orders?.[guid];
+  if (exOrder?.partnerName) {
+    if ('NAME_ZAK' in h) {
+      const expName = exOrder.partnerName.substring(0, 50).trim();
+      const actName = String(h.NAME_ZAK ?? '').trim();
+      report('заказ: заказчик', 'C1_ZC', guid, ref_id, 'NAME_ZAK', expName, actName, actName === expName ? 'pass' : 'fail', 'контрагент создан с нуля');
+    } else {
+      report('заказ: заказчик', 'C1_ZC', guid, ref_id, 'NAME_ZAK', exOrder.partnerName, 'поля нет в C1_ZAKAZ_H_S', 'warn');
+    }
+  }
+
   const items1c = order.НоменклатураЗаказаПокупателя ?? [];
   const rowsI = await fbq('C1_ZAKAZ_I_S', { ID_ZAKAZ: ref_id });
   report('заказ: строки', 'C1_ZC', guid, ref_id, 'число строк', items1c.length, rowsI.length, rowsI.length === items1c.length ? 'pass' : 'fail');
@@ -151,11 +170,22 @@ for (const [guid, { ref_id, doc }] of journal.get('C1_Nom') ?? []) {
     report('номенклатура', 'C1_Nom', guid, ref_id, 'EXP_NOM_S', '1 строка', rows.length, 'fail');
     continue;
   }
+  const exNom = expect.noms?.[guid];
   const expName = String(nom.НаименованиеНоменклатуры ?? '').substring(0, 150).trim();
   const actName = String(r.NOM_NAME ?? '').trim();
-  report('номенклатура', 'C1_Nom', guid, ref_id, 'NOM_NAME', expName, actName, actName === expName ? 'pass' : 'warn', 'имя может преобразовываться (OBJ_LIST/ADD)');
-  report('номенклатура', 'C1_Nom', guid, ref_id, 'CATALOG_NAME', 'непусто', r.CATALOG_NAME, r.CATALOG_NAME ? 'pass' : 'warn');
-  report('номенклатура', 'C1_Nom', guid, ref_id, 'MEASURE_NAME', 'непусто', r.MEASURE_NAME, r.MEASURE_NAME ? 'pass' : 'warn', 'опечатка GUIDКдиницыИзмерения может не проставлять единицу');
+  report('номенклатура', 'C1_Nom', guid, ref_id, 'NOM_NAME', expName, actName, actName === expName ? 'pass' : exNom ? 'fail' : 'warn', exNom ? 'синтетика: имя обязано совпасть' : 'имя может преобразовываться (OBJ_LIST/ADD)');
+  if (exNom?.catalogName) {
+    const act = String(r.CATALOG_NAME ?? '').trim();
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'CATALOG_NAME', exNom.catalogName, act, act === exNom.catalogName ? 'pass' : 'fail', 'группа создана с нуля');
+  } else {
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'CATALOG_NAME', 'непусто', r.CATALOG_NAME, r.CATALOG_NAME ? 'pass' : 'warn');
+  }
+  if (exNom?.measureName) {
+    const act = String(r.MEASURE_NAME ?? '').trim();
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'MEASURE_NAME', exNom.measureName, act, act === exNom.measureName ? 'pass' : 'fail', 'единица создана с нуля');
+  } else {
+    report('номенклатура', 'C1_Nom', guid, ref_id, 'MEASURE_NAME', 'непусто', r.MEASURE_NAME, r.MEASURE_NAME ? 'pass' : 'warn', 'опечатка GUIDКдиницыИзмерения может не проставлять единицу');
+  }
 
   try {
     const links = await fbq('C1_LINKS_S', { P_NOM_ID: ref_id });

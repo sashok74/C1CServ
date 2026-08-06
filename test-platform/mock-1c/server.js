@@ -75,9 +75,14 @@ async function stockHandler(guid) {
 
   let nomName = `MOCK ${guid}`;
   let storageName = 'MOCK склад';
+  // имя номенклатуры: файловый источник приоритетнее (синтетика живёт в файлах)
+  const fileNom = readFileSource('get_nomenclature', guid);
+  if (fileNom) nomName = fileNom.response?.Номенклатура?.НаименованиеНоменклатуры || nomName;
   if (mongoDb) {
-    const nom = await mongoDb.collection('C1_Nom').findOne({ [pathMap.get_nomenclature.queryField]: guid });
-    if (nom) nomName = nom.response?.Номенклатура?.НаименованиеНоменклатуры || nomName;
+    if (!fileNom) {
+      const nom = await mongoDb.collection('C1_Nom').findOne({ [pathMap.get_nomenclature.queryField]: guid });
+      if (nom) nomName = nom.response?.Номенклатура?.НаименованиеНоменклатуры || nomName;
+    }
     const st = await mongoDb
       .collection('C1_Storage')
       .findOne({ [pathMap.get_organizational_unit.queryField]: stockStorageGuid });

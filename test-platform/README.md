@@ -57,6 +57,31 @@ node test-platform/scripts/pick-order.js --auto      # выбрать заказ
 node test-platform/scripts/run-all.js                # прогон + verify
 ```
 
+## Синтетический сценарий: объекты, которых нет в базе
+
+Проверяет ветку **создания с нуля** (в HiTek нет ни соответствий, ни самих записей):
+3 заказа, 3 новых контрагента, 8 новых номенклатур (2 — чип-компоненты с парсингом
+параметров из имени), 4 новые группы каталога (с иерархией), 2 единицы измерения,
+участок и 2 спецификации с составом и операциями. GUID детерминированные
+(`5e57….-0000-4000-9000-…`), набор кладётся в `mock-files/` (файлы приоритетнее mongo).
+
+```powershell
+.\test-platform\scripts\win\gen-synthetic.ps1          # генерация + полный сброс + прогон + verify
+.\test-platform\scripts\win\gen-synthetic.ps1 -GenOnly # только сгенерировать набор
+```
+
+На контейнере: `node test-platform/scripts/gen-synthetic.js`, затем
+`node test-platform/scripts/run-all.js --scenario test-platform/scenarios/order-synthetic.json`
+(после полного сброса — `win/reset.ps1` / `c1-test-reset.yml`).
+
+Сценарий несёт блок `expect` — verify сверяет точно: имена/коды номенклатур,
+привязку к созданным группам и единицам, заказчика в шапке заказа (`NAME_ZAK`),
+число строк. Для чип-компонентов точная группа/единица не гарантируется
+(`EXP_NOM_IU` может привязать их к существующему `OBJ_LIST` по имени паттерна).
+
+**Очистка базы** (перед любым прогоном): `.\test-platform\scripts\win\reset.ps1` —
+переклон `erp_base_api_c1` из копии + шим + очистка журнала `c1_data_test`.
+
 ## Ручная проверка «закинуть файлы»
 
 Положить JSON-ответы 1С в `/srv/c1-test/mock-files/<путь>/<GUID>.json`
