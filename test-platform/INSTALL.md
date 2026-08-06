@@ -1,31 +1,36 @@
-# Установка тестовой платформы на пустой контейнер
+# Установка тестовой платформы
 
-Разворачивает весь стек — **C1CServ + мок-1С + fb-port + MongoDB** — в одном пустом LXC.
-Запись идёт в тестовый клон базы HiTek (`erp_base_api_c1` на firebird5.home.lan), 1С эмулируется моком.
+Разворачивает весь стек — **C1CServ + мок-1С + fb-port + MongoDB** — на одной машине.
+1С эмулируется моком, запись идёт в **тестовую копию** базы HiTek (Firebird).
 
 Проверено на Debian 12 (bookworm): Node.js 20.20, MongoDB 7.0, Firebird-клиент 3.0,
-сервер Firebird 6. Ручная установка занимает ~40 минут, из них ~30 — apt.
+сервер Firebird 6 (совместим с 5). Ручная установка — ~40 минут, из них ~30 занимает apt.
+
+Документ рассчитан на установку **в любом окружении**. Раздел 1 — короткий путь для
+инфраструктуры hitek-pro (ansible); разделы 2–5 от неё не зависят.
 
 ---
 
 ## 0. Что нужно до начала
 
-Всё лежит в infra-репозитории на ansible-ctl (`/opt/infra-ansible`), команды ниже — оттуда.
-
-| Что | Как получить / проверить |
+| Что | Требование |
 |---|---|
-| Доступ к управляющему хосту | `ssh raa@ansible-ctl`, беспарольный sudo |
-| Тестовый клон `erp_base_api_c1.fdb` на firebird5.home.lan (алиасы `erp_base_api_c1`, `db_hitek_api_c1`) | создать/пересоздать: `sudo ansible-playbook playbooks/services/firebird5-erp-api-c1.yml -e c1_clone_confirm=RECLONE-ERP-BASE-API-C1` |
-| `<MONGO_PWD>` — пароль mongo-пользователя `ind` | `sudo ansible-vault view inventory/group_vars/all/vault_c1_test.yml` → `vault_c1_test_mongo_password` |
-| `<SYSDBA_PWD>` — пароль SYSDBA на firebird5 | `sudo ansible-vault view group_vars/all/vault.yml \| grep firebird5_sysdba` |
-| Набор данных мока `seed-data.tar.gz` (снимок прод-журнала) | уже в репо: `roles/c1_test/files/seed-data.tar.gz` |
+| Машина под платформу | чистый Debian 12, 4 ГБ RAM, 20 ГБ диска, root-доступ, выход в интернет (apt, github.com) |
+| Сервер Firebird с **копией** базы HiTek | версия 3.0+; нужен сетевой доступ с машины платформы; понадобятся хост, путь/алиас базы и пароль SYSDBA |
+| Пароль MongoDB | придумываете сами при установке (раздел 2.4) |
+| Исходники | `https://github.com/sashok74/C1CServ` и `https://github.com/sashok74/fb-port` |
 
-Доступ к прод-журналу Mongo (192.168.7.104) для установки **не нужен** — он требуется
-только чтобы обновить набор (`seed-mock.js --all`, см. конец раздела 3).
+Обозначения ниже: `<FB_HOST>` — хост Firebird, `<FB_DB>` — путь или алиас **тестовой копии**,
+`<SYSDBA_PWD>` — её пароль SYSDBA, `<MONGO_PWD>` — пароль, который вы задаёте сами.
+
+> ⚠️ **Никогда не указывайте боевую базу.** Платформа выполняет процедуры экспорта, которые
+> пишут данные. Сделайте копию (`gbak -b` + `gbak -c`) и работайте только с ней.
+> Раздел 2.10 добавляет в копию процедуры выгрузки; сервис при старте проверяет, что имя
+> базы совпадает с `EXPECTED_DB_SUFFIX` — задайте туда имя файла копии.
 
 ---
 
-## 1. Путь А — штатная установка ansible (рекомендуется)
+## 1. Путь А — ansible (только для инфраструктуры hitek-pro)
 
 ```bash
 ssh raa@ansible-ctl && cd /opt/infra-ansible
@@ -40,28 +45,27 @@ sudo ansible-playbook playbooks/services/c1-test.yml -e target_host=test-c1-test
 sudo ansible-playbook playbooks/infra/test-lxc.yml -e "service=c1-test state=absent"
 ```
 
-Плейбук делает всё из разделов 2 и 3 (LXC, пакеты, MongoDB, пользователи, репозитории,
-сборка, env, systemd, распаковка набора, засев `c1_mock`, генерация обоих сценариев).
-Дальше — сразу раздел 4.
+Плейбук делает всё из разделов 2 и 3 и берёт секреты из vault
+(`vault_c1_test_mongo_password`, `vault_firebird5_sysdba_password`), а набор данных
+мока — из `roles/c1_test/files/seed-data.tar.gz`. Дальше — сразу раздел 4.
+
+**В любом другом окружении** этот раздел пропускается: идите в раздел 2.
 
 ---
 
-## 2. Путь Б — ручная установка (пустой Debian 12 LXC)
+## 2. Путь Б — ручная установка (любое окружение)
 
-Шаги в точности повторяют роль `roles/c1_test`. Везде подставить `<MONGO_PWD>` и
-`<SYSDBA_PWD>` из раздела 0.
+Подставляйте свои `<FB_HOST>`, `<FB_DB>`, `<SYSDBA_PWD>` и выбранный `<MONGO_PWD>`.
+Все команды — от root на машине платформы.
 
-### Шаг 2.0. Войти в контейнер
+### Шаг 2.0. Подготовка машины
 
-```bash
-ssh raa@ansible-ctl
-sudo ssh raa@<IP-контейнера>   # ключ root'а ansible-ctl авторизован для raa
-sudo -i                        # дальше всё от root
-```
+Зайти на машину под root (`ssh root@<хост>` или `ssh <user>@<хост>` + `sudo -i`).
 
-В **свежесозданном** контейнере авторизован только `raa` — `ssh root@<IP>` не пустит
-(в давно развёрнутом `c1-test` работает и `root@`).
-Проверка: `cat /etc/debian_version` → `12.x`.
+Проверка: `cat /etc/debian_version` → `12.x`; `ping -c1 <FB_HOST>` проходит.
+
+> В инфраструктуре hitek-pro свежесозданный LXC пускает только пользователя `raa`:
+> `ssh raa@ansible-ctl`, затем `sudo ssh raa@<IP>` и `sudo -i`.
 
 ### Шаг 2.1. Базовые пакеты
 
@@ -162,8 +166,8 @@ cat > /etc/c1-test/fb-port.env <<'EOF'
 PORT=3333
 SERVER=127.0.0.1
 DB_PORT=3050
-DB_HOST=firebird5.home.lan
-DB_NAME=/var/lib/firebird/erp_base_api_c1.fdb
+DB_HOST=<FB_HOST>
+DB_NAME=<FB_DB>
 DB_USER=SYSDBA
 DB_PASSWORD=<SYSDBA_PWD>
 CACHE_RES_TTL=3000
@@ -195,24 +199,25 @@ C1CSERV_URL=http://127.0.0.1:3738
 MOCK_URL=http://127.0.0.1:8125
 MOCK_STOCK_CNT=100
 MOCK_STOCK_STORAGE_GUID=
-EXPECTED_DB_SUFFIX=erp_base_api_c1.fdb
+EXPECTED_DB_SUFFIX=<имя файла тестовой копии, например erp_base_api_c1.fdb>
 EOF
 
 chown root:c1test /etc/c1-test /etc/c1-test/*.env
 chmod 0750 /etc/c1-test && chmod 0640 /etc/c1-test/*.env
 ```
 
-Для обновления набора данных из прод-журнала (только `seed-mock.js --all`, при установке
-не нужно) в `platform.env` добавляется строка
-`SEED_SRC_URI=mongodb://ind:<PROD_PWD>@192.168.7.104:27017/c1_data?authSource=c1_data`,
-где `<PROD_PWD>` — `vault_c1_test_prod_mongo_password` из того же vault-файла.
+`EXPECTED_DB_SUFFIX` — предохранитель: прогон не начнётся, если сервис смотрит не в ту базу.
+
+Если у вас есть работающий C1CServ со своим журналом соответствий в MongoDB и вы хотите
+взять оттуда данные для мока (раздел 3, вариант Б), добавьте туда же строку:
+`SEED_SRC_URI=mongodb://<user>:<pwd>@<host>:27017/<база_журнала>?authSource=<база_журнала>`.
 
 ### Шаг 2.8. systemd-юниты
 
 ```bash
 cat > /etc/systemd/system/fb-port.service <<'EOF'
 [Unit]
-Description=fb-port gateway to Firebird test clone (erp_base_api_c1)
+Description=fb-port gateway to Firebird test copy
 After=network-online.target
 Wants=network-online.target
 [Service]
@@ -269,82 +274,126 @@ sleep 10                                                   # сервисам н
 systemctl is-active mongod fb-port c1-mock c1cserv-test    # 4x active
 curl -s http://127.0.0.1:8125/__health                     # {"status":"ok","mongo":"ok",...}
 curl -s http://127.0.0.1:3738/                             # {"message":"Hello World!!!"}
-curl -s http://127.0.0.1:3738/test_db | grep -o erp_base_api_c1.fdb
-# ^ ОБЯЗАН вернуть erp_base_api_c1.fdb — иначе сервис смотрит не в тестовую базу
+curl -s http://127.0.0.1:3738/test_db | grep -o '<имя файла тестовой копии>'
+# ^ ОБЯЗАН вернуть имя ВАШЕЙ тестовой копии (то же, что в EXPECTED_DB_SUFFIX).
+#   Если вернулось имя другой базы — остановитесь и исправьте fb-port.env.
 ```
 
 Пустой ответ curl сразу после `enable --now` — сервисы ещё поднимаются, повторить через 10 c.
 Если юнит не `active`: `journalctl -u <юнит> -n 30`.
 
+### Шаг 2.10. Процедуры в тестовой копии базы
+
+В копию нужно доложить процедуры выгрузки (и, при необходимости, исправления). SQL лежит
+в репозитории: `/opt/c1cserv/test-platform/sql/` — там же `README.md` с описанием, какой
+файл зачем и нужен ли он вам.
+
+```bash
+cd /opt/c1cserv/test-platform/sql
+export ISC_USER=SYSDBA ISC_PASSWORD='<SYSDBA_PWD>'
+
+# нужен, только если в копии урезан реестр MET$ (см. sql/README.md):
+isql -q -bail -i 00-gateway-shim.sql        <FB_HOST>:<FB_DB>
+# исправления дефектов (желательно: без него повторный экспорт заказа падает):
+isql -q -bail -i 01-prod-fix-candidates.sql <FB_HOST>:<FB_DB>
+# процедуры выгрузки в 1С (нужны для /exp2/v1/*):
+isql -q -bail -i 02-exp2-export.sql         <FB_HOST>:<FB_DB>
+```
+
+Проверка: `curl -s http://127.0.0.1:3738/exp2/v1/state` → все источники `"доступна":true`.
+
+Если Firebird-сервер на другой машине и `isql` там удобнее — скопируйте туда каталог `sql/`
+и выполните локально. **После каждого пересоздания копии применять заново.**
+
 ---
 
-## 3. Засев данных мока (один раз после установки)
+## 3. Данные для мока 1С
 
-При пути А выполняется автоматически (таск `seed`) — этот раздел только для пути Б.
-
-Доставить набор на контейнер (**с ansible-ctl**; в свежем контейнере копировать под `raa`):
-
-```bash
-sudo scp /opt/infra-ansible/roles/c1_test/files/seed-data.tar.gz raa@<IP>:/tmp/
-# либо, если хост есть в inventory:
-cd /opt/infra-ansible && sudo ansible <host> -m copy \
-  -a "src=roles/c1_test/files/seed-data.tar.gz dest=/tmp/"
-```
-
-Дальше **в контейнере от root**:
+Все скрипты платформы запускаются от `c1test` с окружением из `platform.env`. Объявите
+функцию один раз (она используется и в разделе 4):
 
 ```bash
-tar xzf /tmp/seed-data.tar.gz -C /srv/c1-test/seed && chown -R c1test:c1test /srv/c1-test/seed
-
-# все скрипты платформы запускаются от c1test с окружением из platform.env:
 c1run() { sudo -u c1test bash -c "set -a; . /etc/c1-test/platform.env; set +a; cd /opt/c1cserv && $*"; }
-
-c1run 'node test-platform/scripts/seed-mock.js'           # залить набор в c1_mock
-c1run 'node test-platform/scripts/pick-order.js --auto'   # исторический сценарий
-c1run 'node test-platform/scripts/gen-synthetic.js'       # синтетический сценарий
 ```
 
-`pick-order.js` печатает «дыры замыкания» (ссылки на объекты, которых нет в историческом
-журнале) — это нормально, verify пометит их `warn`.
+Дальше — один из двух вариантов.
 
-Проверка: `ls /opt/c1cserv/test-platform/scenarios/` → есть `order-basic.json` и
-`order-synthetic.json`.
+### Вариант А (по умолчанию): синтетический набор, данные не нужны
 
-Пересеять мок заново (плейбук идемпотентен — работает, только если `c1_mock` пуста):
+Генератор создаёт заказы, контрагентов, номенклатуру, группы, единицы, склад и
+спецификации сам — **никаких внешних данных и доступов не требуется**:
 
 ```bash
-cd /opt/infra-ansible && sudo ansible-playbook playbooks/services/c1-test.yml --tags seed
-# принудительно: сначала  mongosh --quiet c1_mock --eval "db.dropDatabase()"
+c1run 'node test-platform/scripts/gen-synthetic.js'
 ```
 
-Обновить сам комплектный набор (нужен доступ к прод-журналу и `SEED_SRC_URI` в `platform.env`):
-`c1run 'node test-platform/scripts/seed-mock.js --all'`, затем
-`tar czf seed-data.tar.gz -C /srv/c1-test/seed .` → `roles/c1_test/files/` в infra-репо.
+Затем допишите в `/etc/c1-test/mock.env` и `/etc/c1-test/platform.env` GUID склада из
+синтетического набора (без него мок не сможет синтезировать остатки):
+
+```
+MOCK_STOCK_STORAGE_GUID=5e570006-0000-4000-9000-000000000001
+```
+
+и перезапустите мок: `systemctl restart c1-mock`.
+
+Проверка: `ls /opt/c1cserv/test-platform/scenarios/order-synthetic.json` — файл есть.
+Этого достаточно, чтобы перейти к разделу 4 и получить зелёный прогон.
+
+### Вариант Б (опционально): исторические данные из вашего журнала C1CServ
+
+Имеет смысл, если у вас уже работает C1CServ и в MongoDB накоплен журнал соответствий:
+тогда мок будет отдавать **реальные исторические ответы 1С**.
+
+```bash
+# 1. выгрузить журнал в файлы и залить в c1_mock (нужен SEED_SRC_URI в platform.env)
+c1run 'node test-platform/scripts/seed-mock.js --all'
+
+# 2. выбрать связный заказ и создать сценарий
+c1run 'node test-platform/scripts/pick-order.js --auto'
+```
+
+`pick-order.js` печатает «дыры замыкания» — ссылки на объекты, которых в журнале нет.
+Это нормально: мок ответит на них 404, verify пометит `warn`.
+
+Если набор уже выгружен ранее в `SEED_DIR` (каталог `/srv/c1-test/seed`), залить его без
+похода в источник: `c1run 'node test-platform/scripts/seed-mock.js'`.
+
+> В инфраструктуре hitek-pro готовый набор поставляется с ansible-ролью
+> (`roles/c1_test/files/seed-data.tar.gz`) и заливается автоматически (таск `seed`);
+> пересеять — `ansible-playbook playbooks/services/c1-test.yml --tags seed`, принудительно —
+> предварительно `mongosh --quiet c1_mock --eval "db.dropDatabase()"`.
 
 ---
 
 ## 4. Запуск тестов и проверка результатов
 
-### 4.1. Нужен ли полный сброс базы
+### 4.1. Нужно ли пересоздавать копию базы
 
-Сброс (`c1-test-reset.yml`) = переклон `erp_base_api_c1` + шим + фикс-кандидаты + очистка
-журнала + рестарт сервисов.
+«Сброс» = восстановить копию из бэкапа заново + применить SQL из `test-platform/sql/`
+(раздел 2.10) + очистить журнал `c1_data_test` + перезапустить сервисы.
 
-- **После свежей установки сброс не нужен** — клон уже пригоден.
-- `order-synthetic` идемпотентен (фикс Ф2): повторные прогоны зелёные без сброса.
-- `order-basic` в грязном клоне может упасть на повторном экспорте того же заказа — перед
-  ним сброс делать стоит.
+- **После свежей установки сброс не нужен** — копия пригодна.
+- `order-synthetic` идемпотентен (после `01-prod-fix-candidates.sql`): повторные прогоны
+  зелёные без сброса.
+- `order-basic` в «грязной» копии может упасть на повторном экспорте того же заказа —
+  перед ним сброс делать стоит.
+
+Вручную:
 
 ```bash
-# с ansible-ctl:
-cd /opt/infra-ansible && sudo ansible-playbook playbooks/services/c1-test-reset.yml
-# с Windows-станции:  .\test-platform\scripts\win\reset.ps1
+# на сервере Firebird: восстановить копию из бэкапа (перед этим остановить fb-port,
+# иначе активные подключения не дадут перезаписать файл)
+gbak -b -g <FB_HOST>:<исходная_база> /tmp/hitek.fbk
+gbak -c -rep /tmp/hitek.fbk <FB_HOST>:<FB_DB>
+# затем заново применить SQL из test-platform/sql/ (раздел 2.10)
 ```
 
-> **Клон базы один на все контейнеры.** Сброс оборвёт прогон, идущий на соседнем
-> контейнере — согласовать перед запуском.
+> В инфраструктуре hitek-pro всё это делает один плейбук:
+> `sudo ansible-playbook playbooks/services/c1-test-reset.yml` (с Windows-станции —
+> `.\test-platform\scripts\win\reset.ps1`). ⚠️ Копия базы там **одна на все контейнеры**,
+> и сброс оборвёт прогон, идущий на соседнем — согласуйте перед запуском.
 
-### 4.2. Запуск на контейнере
+### 4.2. Запуск
 
 ```bash
 # (c1run — функция из раздела 3)
@@ -352,15 +401,14 @@ c1run 'node test-platform/scripts/run-all.js --scenario test-platform/scenarios/
 c1run 'node test-platform/scripts/run-all.js --scenario test-platform/scenarios/order-basic.json'
 ```
 
-`run-all` чистит журнал (`--force-reset`), прогоняет сценарий и запускает verify.
-Код возврата: `0` — все проверки pass/known-issue; `≠0` — есть fail или ошибки импорта.
+`run-all` чистит журнал (`--force-reset`), прогоняет сценарий, запускает verify и снимает
+выгрузку в 1С (раздел 5). Код возврата: `0` — все проверки pass/known-issue; `≠0` — есть
+fail или ошибки импорта.
 
-С Windows-станции (нужен ssh-ключ на контейнер; по умолчанию `-TestHost 192.168.7.143`):
-
-```powershell
-.\test-platform\scripts\win\run-test.ps1        # исторический, со сбросом
-.\test-platform\scripts\win\gen-synthetic.ps1   # синтетика: генерация + сброс + прогон
-```
+Обёртки для Windows-станции (`win/run-test.ps1`, `win/gen-synthetic.ps1`) рассчитаны на
+инфраструктуру hitek-pro: они ходят по ssh на `192.168.7.143` и вызывают ansible-плейбук
+сброса. В другом окружении задайте свой хост параметром `-TestHost` и используйте
+`-NoReset`, либо запускайте команды выше прямо на машине платформы.
 
 ### 4.3. Проверить результат последнего прогона
 
@@ -403,9 +451,10 @@ done
 
 | Сценарий | Ожидание |
 |---|---|
-| `order-synthetic` | **93 pass / 0 fail / 0 warn / 0 known-issue** — набор детерминированный, числа обязаны совпасть |
-| `order-synthetic` повторно, без сброса | те же 93 pass / 0 fail — проверка идемпотентности повторного экспорта |
-| `order-basic` (после сброса) | **0 fail**; на эталонной установке было 108 pass / 6 warn. Абсолютные числа зависят от заказа, который выбрал `pick-order.js --auto`, и числа «дыр» в исторических данных — сверять надо `fail`, а не сумму |
+| `order-synthetic` (вариант А, только синтетика) | **92 pass / 0 fail / 0 warn / 0 known-issue** |
+| `order-synthetic` (вариант Б, `c1_mock` засеян историей) | **93 pass / 0 fail** — на одну проверку больше |
+| `order-synthetic` повторно, без сброса | те же числа, 0 fail — проверка идемпотентности повторного экспорта |
+| `order-basic` (только вариант Б, после сброса) | **0 fail**; на эталонной установке было 108 pass / 6 warn. Абсолютные числа зависят от заказа, который выбрал `pick-order.js --auto`, и числа «дыр» в исторических данных — сверять надо `fail`, а не сумму |
 
 Если есть `fail` — смотреть таблицу не-pass в `report.md`, ответы сервиса в `run.json`
 (`err.errCode`) и журналы: `journalctl -u c1cserv-test -u fb-port -u c1-mock`.
