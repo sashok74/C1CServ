@@ -30,7 +30,8 @@ Windows-станция ──ssh──► LXC c1-test (192.168.7.143)           
 | `scripts/pick-order.js` | Выбор связного набора GUID (`--auto` / `--guid`), генерация сценария, отчёт о «дырах» замыкания |
 | `scripts/run-scenario.js` | Preflight-гейты + прогон ручек C1CServ. Ошибки ищутся в теле HTTP 201 (`err.errCode`) |
 | `scripts/verify.js` | Сверка A(лог мока) ↔ B(журнал `c1_data_test`) ↔ C(Firebird через fb-port, только `*_S`-процедуры, READ_ONLY). Отчёт `report.json`/`report.md`, exit≠0 при fail |
-| `scripts/run-all.js` | reset журнала → прогон → verify |
+| `scripts/export-dump.js` | Снимок обратной выгрузки HiTek→1С (`/exp2/v1/*`): сырой JSON по каждому эндпоинту + человекочитаемый `export.md`. `--full` — все страницы |
+| `scripts/run-all.js` | reset журнала → прогон → verify → снимок выгрузки в `run-*/export/` |
 | `scripts/win/*.ps1` | Обёртки для Windows-станции: `run-test`, `deploy`, `reset` |
 | `scenarios/` | Сценарии прогона (генерируются `pick-order.js`) |
 | `seed-golden/` | Маленький закоммиченный связный набор JSON для оффлайн-проверки мока |
@@ -58,6 +59,13 @@ node test-platform/scripts/seed-mock.js --all        # засев мока (од
 node test-platform/scripts/pick-order.js --auto      # выбрать заказ, создать сценарий
 node test-platform/scripts/run-all.js                # прогон + verify
 ```
+
+## Выгрузка в 1С: посмотреть результат
+
+Каждый прогон снимает обратную выгрузку HiTek→1С и кладёт рядом с отчётом:
+`run-<время>/export/export.md` — документы, спецификации и номенклатура таблицами,
+плюс сырые JSON, как их получит 1С. Подробнее — `INSTALL.md` §5,
+описание самих маршрутов — `c1serv_doc/EXP2_API.md`.
 
 ## Синтетический сценарий: объекты, которых нет в базе
 
