@@ -12,19 +12,23 @@ function run(script, extra = []) {
   return res.status ?? 1;
 }
 
+const RUN_DIR = process.env.RUN_DIR || path.resolve('test-platform', 'reports');
+fs.mkdirSync(RUN_DIR, { recursive: true });
+const before = new Set(fs.readdirSync(RUN_DIR).filter((d) => d.startsWith('run-')));
+
 const scenarioStatus = run('run-scenario.js', [...args, '--force-reset']);
 
-// verify запускаем даже при ошибках прогона — отчёт полезен для диагностики
-const RUN_DIR = process.env.RUN_DIR || path.resolve('test-platform', 'reports');
-const runs = fs
+// verify — только по каталогу, созданному ЭТИМ прогоном (не по прошлому)
+const created = fs
   .readdirSync(RUN_DIR)
-  .filter((d) => d.startsWith('run-'))
+  .filter((d) => d.startsWith('run-') && !before.has(d))
   .sort();
-const last = runs[runs.length - 1];
+const last = created[created.length - 1];
 if (!last) {
-  console.error('run-all: нет каталога прогона');
-  process.exit(1);
+  console.error('run-all: прогон не создал каталог отчёта — verify пропущен');
+  process.exit(scenarioStatus || 1);
 }
+// verify запускаем даже при ошибках прогона — отчёт полезен для диагностики
 const verifyStatus = run('verify.js', ['--run', path.join(RUN_DIR, last)]);
 
 process.exit(scenarioStatus || verifyStatus);

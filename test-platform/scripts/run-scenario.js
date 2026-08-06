@@ -20,18 +20,30 @@ const forceReset = args.includes('--force-reset');
 
 const scenario = JSON.parse(fs.readFileSync(scenarioFile, 'utf8'));
 
+// сервисы могли только что рестартовать (после reset) — health-чеки с ретраем
+async function waitFor(fn, name, attempts = 15, delayMs = 2000) {
+  for (let i = 1; ; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i >= attempts) throw new Error(`${name}: ${err.message}`);
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+}
+
 async function preflight() {
   // 1. Мок жив
-  const health = (await axios.get(`${MOCK_URL}/__health`, { timeout: 5000 })).data;
+  const health = await waitFor(async () => (await axios.get(`${MOCK_URL}/__health`, { timeout: 5000 })).data, 'мок');
   if (health.status !== 'ok') throw new Error(`мок не готов: ${JSON.stringify(health)}`);
   console.log(`preflight: мок ok (mongo=${health.mongo}, склад остатков=${health.stockStorageGuid || 'нет'})`);
 
   // 2. C1CServ жив
-  await axios.get(`${C1CSERV_URL}/`, { timeout: 5000 });
+  await waitFor(() => axios.get(`${C1CSERV_URL}/`, { timeout: 5000 }), 'C1CServ');
   console.log('preflight: C1CServ ok');
 
   // 3. ГЛАВНЫЙ ГЕЙТ: C1CServ смотрит в тестовый клон, не в прод
-  const dbInfo = (await axios.get(`${C1CSERV_URL}/test_db`, { timeout: 30000 })).data;
+  const dbInfo = await waitFor(async () => (await axios.get(`${C1CSERV_URL}/test_db`, { timeout: 30000 })).data, 'test_db');
   const dbInfoStr = JSON.stringify(dbInfo);
   if (!dbInfoStr.includes(EXPECTED_DB_SUFFIX)) {
     throw new Error(`СТОП: /test_db не подтверждает тестовую базу (${EXPECTED_DB_SUFFIX}). Ответ: ${dbInfoStr.slice(0, 500)}`);
