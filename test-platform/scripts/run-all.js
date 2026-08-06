@@ -31,4 +31,9 @@ if (!last) {
 // verify запускаем даже при ошибках прогона — отчёт полезен для диагностики
 const verifyStatus = run('verify.js', ['--run', path.join(RUN_DIR, last)]);
 
+// снимок выгрузки в 1С по свежеимпортированным данным: export/export.md рядом с отчётом.
+// Не влияет на код возврата теста — это материал для просмотра глазами.
+console.log('\nВыгрузка в 1С (снимок):');
+run('export-dump.js', ['--out', path.join(RUN_DIR, last, 'export'), ...(args.includes('--full-export') ? ['--full'] : [])]);
+
 process.exit(scenarioStatus || verifyStatus);
