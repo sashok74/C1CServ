@@ -1,4 +1,69 @@
-# tools/
+ tools/
+
+## Быстрый ответ: какой адрес в какой переменной
+
+Все сетевые адреса обмена задаются **переменными окружения** в файле `.env`, который
+лежит **в корне проекта** (рядом с `package.json`). Файл в `.gitignore`, поэтому в git
+и в бэкапах исходников его нет — только на самой машине.
+
+### C1CServ — файл `<каталог C1CServ>/.env`
+
+| Что за адрес | Переменная | Пример значения |
+|---|---|---|
+| **IP сервера 1С** | **`C1_WEBSERVER`** | `192.168.10.58` (порт не указывается → 80) |
+| Адрес шлюза fb-port | `DB_HOST` + `DB_PORT` | `firebird5.home.lan` + `3333` |
+| Адрес MongoDB | `MONGODB_SERVER` (+ `MONGODB_BASE`, `MONGODB_USER`, `MONGODB_PASSWORD`) | `192.168.7.222`, база `c1_data` |
+| На чём слушает сам C1CServ | `SERVER` + `PORT` | `127.0.0.1` + `3738` |
+
+Переменные `DB_NAME`, `DB_USER`, `DB_PASSWORD` в `.env` C1CServ **не используются** —
+Firebird-доступом владеет fb-port. Полный список переменных — `src/types/environment.d.ts`.
+
+### fb-port — файл `<каталог fb-port>/.env`
+
+| Что за адрес | Переменная | Пример значения |
+|---|---|---|
+| Сервер Firebird | `DB_HOST` + `DB_PORT` | `firebird5.home.lan` + `3050` |
+| **База данных** | `DB_NAME` | `erp_base_api` (алиас) или `/var/lib/firebird/erp_base_api_c1.fdb` (полный путь) |
+| Учётные данные БД | `DB_USER`, `DB_PASSWORD` | `SYSDBA` |
+| На чём слушает сам fb-port | `SERVER` + `PORT` | `0.0.0.0` + `3333` |
+
+## Как найти IP 1С, если машина давно не работает
+
+Адрес 1С **не сохраняется больше нигде**: в журнале MongoDB лежат только сами ответы 1С
+и время, в логах C1CServ пишется путь запроса без хоста (`axios.get: unf/hs/ht/get_order`),
+в базе Firebird адреса нет. Значит искать надо файл `.env` — по порядку:
+
+1. **Рабочая копия разработчика.** Чаще всего именно там он и переживает:
+   `C:\NodeProjects\C1CServ\.env` → строка `C1_WEBSERVER=`.
+2. **Машина, где сервис работал.** Путь виден по хардкоду в коде
+   (`src/modules/routes.ts`, маршрут `/C1_ZC_FILE` читает
+   `/root/node-app/C1CServ/src/testData/docUID.txt`) — значит проект лежал в
+   `/root/node-app/C1CServ/`, и `.env` надо искать там же:
+   ```bash
+   cat /root/node-app/C1CServ/.env | grep C1_WEBSERVER
+   find / -name '.env' -path '*1CServ*' 2>/dev/null
+   ```
+3. **Бэкап той машины** (не бэкап исходников — в нём `.env` отсутствует по `.gitignore`).
+4. **Если сервис ещё запущен** — из памяти процесса, даже когда файл потерян:
+   ```bash
+   tr '\0' '\n' < /proc/<PID>/environ | grep C1_WEBSERVER
+   ```
+5. **Если запускался через systemd** — адрес может быть не в `.env`, а в юните:
+   ```bash
+   grep -rl C1CServ /etc/systemd/system/*.service
+   grep -E 'Environment|EnvironmentFile' /etc/systemd/system/<юнит>.service
+   ```
+6. **Косвенно** — в истории команд и скриптах развёртывания:
+   ```bash
+   grep -rn 'C1_WEBSERVER' /root /home /opt /etc 2>/dev/null
+   grep -rn 'C1_WEBSERVER' ~/.bash_history
+   ```
+
+Сетевым сканированием подсети адрес **найти нельзя**: проверено, что в `192.168.10.0/24`
+«отвечают» все адреса и все порты (посредник на маршруте), поэтому ни `ping`, ни проверка
+порта там ничего не доказывают.
+
+---
 
 ## `discover-stack.sh` — обследование хоста
 
@@ -139,7 +204,6 @@ ls -d /opt/*/src/modules/1cdata.ts /opt/*/build/modules/1cdata.js 2>/dev/null
 
 ```bash
 cd <каталог>
-git -c safe.directory='*' log --oneline -1     # какая версия кода развёрнута
 ls -l build/server.js                          # собран ли (иначе не запустится)
 cat .env                                       # конфиг: порты и адреса
 grep -rl "$PWD" /etc/systemd/system/*.service  # каким юнитом запускается
@@ -164,12 +228,6 @@ curl -s http://127.0.0.1:3738/test_db | grep -o '"DB_NAME":"[^"]*"'  # база,
 curl -s http://127.0.0.1:3333/ProcList | head -c 200                  # живость fb-port
 curl -s "http://<адрес-1С>/unf/hs/ht/get_measure/<GUID>"              # живость 1С
 ```
-
-⚠️ **`ping` и «открытый порт» могут врать.** В сети с прозрачным прокси или
-policy-routing TCP-соединение «устанавливается» с любым адресом и портом. Контроль:
-пробейте заведомо несуществующий адрес той же подсети — если он тоже «отвечает»,
-результаты бессмысленны, отвечает посредник. Достоверен только осмысленный
-прикладной ответ.
 
 ### Пароль для опроса баз
 
