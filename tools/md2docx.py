@@ -45,7 +45,9 @@ def md_to_html(md_path: str) -> str:
 
 def convert(md_path: str, word) -> str:
     html = md_to_html(md_path)
-    tmp = os.path.join(tempfile.gettempdir(), os.path.basename(md_path) + ".html")
+    # уникальное имя: файл после сбоя мог остаться открытым в Word и заблокирован
+    fd, tmp = tempfile.mkstemp(prefix=os.path.basename(md_path) + ".", suffix=".html")
+    os.close(fd)
     # BOM: без него Word может принять UTF-8 за кодировку системы и испортить кириллицу
     with open(tmp, "w", encoding="utf-8-sig") as f:
         f.write(html)
@@ -64,9 +66,11 @@ def main(paths):
     if not paths:
         print(__doc__)
         return 1
-    import win32com.client  # pywin32
+    import win32com.client.dynamic  # pywin32
 
-    word = win32com.client.Dispatch("Word.Application")
+    # именно dynamic: обычный Dispatch может подхватить кэш ранней привязки
+    # (gen_py) и упасть на Documents.Open(...).Close с AttributeError
+    word = win32com.client.dynamic.Dispatch("Word.Application")
     word.Visible = False
     word.DisplayAlerts = False
     try:
