@@ -203,7 +203,78 @@ db.getCollection("log.connections").find().sort({ date: 1 }).limit(5)
 
 ---
 
-## 6. Быстрый ответ на типовые вопросы
+## 6. Как зайти в базу HiTek и посмотреть импортированное
+
+### 6.1 Подключение к базе
+
+Боевая установка (сеть заказчика): сервер **`192.168.10.65`**, база — алиас
+**`erp_base_api`**, пользователь **`SYSDBA`**.
+
+| Инструмент | Строка подключения |
+|---|---|
+| `isql` (Firebird) | `isql -user SYSDBA -password <пароль> 192.168.10.65:erp_base_api` |
+| IBExpert / FlameRobin / DBeaver | сервер `192.168.10.65`, порт `3050`, база `erp_base_api`, пользователь `SYSDBA` |
+| Строка для fb-port (`.env`) | `DB_HOST=192.168.10.65`, `DB_PORT=3050`, `DB_NAME=erp_base_api` |
+
+**Пароль здесь намеренно не записан** — этот файл лежит в публичном GitHub-репозитории.
+Взять его можно из `.env` рабочей установки C1CServ (переменная `DB_PASSWORD`) или из
+`.env` fb-port. Тот же формат подключения годится и для наших тестовых баз, например
+`firebird5.home.lan:erp_base_api_c1`.
+
+Проверка, что подключились к нужной базе:
+
+```sql
+select rdb$get_context('SYSTEM','ENGINE_VERSION') as ENGINE,
+       (select mon$database_name from mon$database) as DB_FILE
+  from rdb$database;
+```
+
+### 6.2 Что открыть в самом HiTek
+
+Приложение `HiTek.exe` читает те же таблицы напрямую (к Node-сервисам не обращается),
+поэтому результат импорта виден в обычных формах:
+
+| Что смотрим | Путь в программе | Таблицы |
+|---|---|---|
+| **Заказы из 1С** | меню `Документы` → `Список заказов из 1С` | `C1_ZAKAZ_H` |
+| Строки заказа и привязка к номенклатуре | двойной клик по строке списка → карточка «Заказ» | `C1_ZAKAZ_I`, `C1_ZAKAZ_NOM_I`, `C1_ZTOD` → `DOC_HEADER` |
+| **Соответствие кодов 1С и номенклатуры** | меню `Документы` → `Номенклатуры 1С` | `C1_NOM`, `C1_LINKS` |
+| Остатки и цены из 1С | из «Номенклатуры 1С» кнопкой правки | `C1_AVAIL*` |
+| Номенклатура, группы, спецификации | обычные справочники и спецификации | `NOM_LIST`, `OBJ_CATALOG`, `BOM_LIST` |
+
+Ориентир, что данные на месте: в списке заказов должны быть номера вида `СИ00-0079xx`
+с датой импорта **15.12.2023**.
+
+### 6.3 То же самое запросами, без клиента
+
+```sql
+-- заказы: сколько и когда импортированы
+select count(*) as ZAKAZOV, min(date_inport) as PERVYY, max(date_inport) as POSLEDNIY
+  from c1_zakaz_h;
+
+-- последние импортированные заказы
+select first 10 id_zakaz, num, data_z, name_zak, date_inport
+  from c1_zakaz_h order by date_inport desc;
+
+-- строки конкретного заказа с привязкой к номенклатуре HiTek
+select zi.id_zakaz_i, zi.kod_izd, zi.name_izd, zi.cnt, zn.nom_id, n.name
+  from c1_zakaz_i zi
+       left join c1_zakaz_nom_i zn on zn.id_zakaz_i = zi.id_zakaz_i
+       left join nom_list n on n.nom_id = zn.nom_id
+ where zi.id_zakaz = 441;
+
+-- соответствие кода 1С и номенклатуры HiTek
+select first 10 l.kod_izd, l.art_izd, l.nom_id, n.name, l.date_mod
+  from c1_links l left join nom_list n on n.nom_id = l.nom_id
+ order by l.date_mod desc;
+
+-- что импорт создал в номенклатуре
+select count(*) from c1_nom;
+```
+
+---
+
+## 7. Быстрый ответ на типовые вопросы
 
 | Вопрос | Где смотреть |
 |---|---|
