@@ -1,0 +1,156 @@
+{
+  "info": {
+    "_postman_id": "fbport-0001-4000-9000-000000000002",
+    "name": "fb-port — шлюз к Firebird",
+    "description": "Универсальный HTTP-шлюз: принимает имя хранимой процедуры и именованные параметры, сам читает сигнатуру из метаданных и выполняет вызов.\n\nПеред работой задайте baseUrl.\nИсторически тестировался на http://localhost:8080 (найдено в Postman этой машины), прод — http://firebird5.home.lan:3333, тестовый стенд — http://127.0.0.1:3333 (только loopback).\n\nОСОБЕННОСТИ:\n• произвольный SQL не поддерживается — только вызовы процедур;\n• параметры со значением 0 и пустой строкой превращаются в NULL;\n• transactonType (именно так, с опечаткой в исходном API): READ_ONLY | READ_WRITE. Пропуск = READ_WRITE, то есть запись — указывайте явно;\n• ошибки приходят с HTTP 500 и полем sqlerror.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:3333", "type": "string" },
+    { "key": "proc", "value": "SYS$GET_DB_INFO", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Метаданные",
+      "item": [
+        {
+          "name": "GET /ProcList — список процедур",
+          "request": {
+            "method": "GET", "header": [],
+            "description": "Самая быстрая проверка живости шлюза и связи с базой (читает met$proc_info).",
+            "url": { "raw": "{{baseUrl}}/ProcList", "host": ["{{baseUrl}}"], "path": ["ProcList"] }
+          }
+        },
+        {
+          "name": "GET /ProcInfo?name= — описание процедуры",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/ProcInfo?name={{proc}}", "host": ["{{baseUrl}}"], "path": ["ProcInfo"],
+              "query": [{ "key": "name", "value": "{{proc}}" }] }
+          }
+        },
+        {
+          "name": "GET /ProcPrmInfo?name= — поля процедуры",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/ProcPrmInfo?name={{proc}}", "host": ["{{baseUrl}}"], "path": ["ProcPrmInfo"],
+              "query": [{ "key": "name", "value": "{{proc}}" }] }
+          }
+        },
+        {
+          "name": "GET /Proc?name= — полные метаданные",
+          "request": {
+            "method": "GET", "header": [],
+            "description": "Есть в исходном наборе Postman (localhost:8080/Proc). Отдаёт PROC_INFO + FIELDS_INFO + PROC_TO_PROC.",
+            "url": { "raw": "{{baseUrl}}/Proc?name={{proc}}", "host": ["{{baseUrl}}"], "path": ["Proc"],
+              "query": [{ "key": "name", "value": "{{proc}}" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Вызов процедур — POST /query",
+      "item": [
+        {
+          "name": "SYS$GET_DB_INFO — проверка связи с базой",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "В ответе поле DB_NAME — путь к файлу базы, к которой шлюз реально подключён.",
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"SYS$GET_DB_INFO\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"ECHO_STRING_IN\": \"проверка\" }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "MET$PROC_INFO_S — метаданные процедуры",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Есть в исходном наборе Postman.",
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"MET$PROC_INFO_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"PROC\": \"EXP_NOM_IU\" }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "SYS_USERS_S — список пользователей",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Есть в исходном наборе Postman.",
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"SYS_USERS_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": {}\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "EXP_NOM_S — карточка номенклатуры по ERP id",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"EXP_NOM_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"NOM_ID_IN\": 2630 }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "C1_ZAKAZ_H_S — заказы по номеру",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"C1_ZAKAZ_H_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"NUM_IN\": \"СИ00-000069\" }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Выгрузка в 1С (процедуры EXP2_*)",
+      "item": [
+        {
+          "name": "EXP2_NOM_LINK_S — номенклатура + код 1С",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "FROM_NOM_ID_IN = null или 0 → с начала. MAX_ROWS_IN — размер страницы.",
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"EXP2_NOM_LINK_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"FROM_NOM_ID_IN\": null, \"MAX_ROWS_IN\": 20 }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "EXP2_STORAGE_S — складские единицы",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"EXP2_STORAGE_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": {}\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "EXP2_ISSUE_S — расход в производство",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"EXP2_ISSUE_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"FROM_ID_IN\": null, \"MAX_ROWS_IN\": 100 }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "EXP2_TRANSFER_S — перемещения",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"EXP2_TRANSFER_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"FROM_ID_IN\": null, \"MAX_ROWS_IN\": 100 }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        },
+        {
+          "name": "EXP2_BOM_S — спецификации",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"procedureName\": \"EXP2_BOM_S\",\n  \"transactonType\": \"READ_ONLY\",\n  \"prm\": { \"FROM_BOM_ID_IN\": null, \"MAX_ROWS_IN\": 50 }\n}" },
+            "url": { "raw": "{{baseUrl}}/query", "host": ["{{baseUrl}}"], "path": ["query"] }
+          }
+        }
+      ]
+    }
+  ]
+}

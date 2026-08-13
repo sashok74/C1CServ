@@ -1,0 +1,243 @@
+{
+  "info": {
+    "_postman_id": "c1cserv-0001-4000-9000-000000000001",
+    "name": "C1CServ — обмен с 1С",
+    "description": "Все ручки сервиса C1CServ: импорт объектов из 1С, обратное создание в 1С, выгрузка в 1С:Бухгалтерию (/exp2/v1).\n\nПеред работой задайте переменную baseUrl (вкладка Variables).\nИсторически сервис работал на http://192.168.10.65:3738 (найдено в Postman этой машины), тестовый стенд — http://192.168.7.143:3738, локально — http://127.0.0.1:3738.\n\nВАЖНО: ошибки импорта приходят в теле ответа с кодом HTTP 201, поле err.errCode (10 — процедура вернула -1, 20 — ошибка MongoDB, 30 — обновление не реализовано, 40 — исключение). Проверять надо тело, а не статус.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:3738", "type": "string" },
+    { "key": "guid", "value": "98c5cb6f-9253-11ed-aeb6-9457a5547ba0", "type": "string" },
+    { "key": "nomGuid", "value": "880e9560-70ae-11e5-a27e-74d435043ca5", "type": "string" },
+    { "key": "refId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Служебные",
+      "item": [
+        {
+          "name": "GET / — проверка живости",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] } }
+        },
+        {
+          "name": "GET /test_db — сквозная проверка до Firebird",
+          "request": {
+            "method": "GET", "header": [],
+            "description": "Вызывает SYS$GET_DB_INFO через fb-port. В ответе поле DB_NAME — это база, в которую сервис РЕАЛЬНО пишет.",
+            "url": { "raw": "{{baseUrl}}/test_db", "host": ["{{baseUrl}}"], "path": ["test_db"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Импорт из 1С (тело: DOC — список GUID)",
+      "item": [
+        {
+          "name": "POST /C1_ZC — заказ клиента",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_ZC", "host": ["{{baseUrl}}"], "path": ["C1_ZC"] }
+          }
+        },
+        {
+          "name": "POST /C1_Partner — контрагент",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Partner", "host": ["{{baseUrl}}"], "path": ["C1_Partner"] }
+          }
+        },
+        {
+          "name": "POST /C1_Nomenklature — номенклатура",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Есть в исходном наборе Postman (192.168.10.65:3738).",
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{nomGuid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Nomenklature", "host": ["{{baseUrl}}"], "path": ["C1_Nomenklature"] }
+          }
+        },
+        {
+          "name": "POST /C1_Catalog — группа номенклатуры",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Catalog", "host": ["{{baseUrl}}"], "path": ["C1_Catalog"] }
+          }
+        },
+        {
+          "name": "POST /C1_Measure — единица измерения",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Measure", "host": ["{{baseUrl}}"], "path": ["C1_Measure"] }
+          }
+        },
+        {
+          "name": "POST /C1_Storage — склад/подразделение",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Storage", "host": ["{{baseUrl}}"], "path": ["C1_Storage"] }
+          }
+        },
+        {
+          "name": "POST /C1_City — город",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_City", "host": ["{{baseUrl}}"], "path": ["C1_City"] }
+          }
+        },
+        {
+          "name": "POST /C1_Country — страна",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Country", "host": ["{{baseUrl}}"], "path": ["C1_Country"] }
+          }
+        },
+        {
+          "name": "POST /C1_Specification — спецификация",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{guid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_Specification", "host": ["{{baseUrl}}"], "path": ["C1_Specification"] }
+          }
+        },
+        {
+          "name": "POST /C1_nomenclature_cnt — остатки по складам",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"DOC\": [\"{{nomGuid}}\"]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_nomenclature_cnt", "host": ["{{baseUrl}}"], "path": ["C1_nomenclature_cnt"] }
+          }
+        },
+        {
+          "name": "POST /C1_ZC_FILE — пакетный прогон из файла",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "description": "Читает GUID не из тела, а из файла: путь захардкожен — /root/node-app/C1CServ/src/testData/docUID.txt",
+            "url": { "raw": "{{baseUrl}}/C1_ZC_FILE", "host": ["{{baseUrl}}"], "path": ["C1_ZC_FILE"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "По ERP-идентификаторам",
+      "item": [
+        {
+          "name": "POST /C1_GUID — найти GUID 1С по ref_id",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Есть в исходном наборе Postman. objectName: Nom | Kontragent | Storage | Measure | City | Country | ZakazClienta | Catalog",
+            "body": { "mode": "raw", "raw": "{\n  \"objectName\": \"Nom\",\n  \"ref_id\": {{refId}}\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_GUID", "host": ["{{baseUrl}}"], "path": ["C1_GUID"] }
+          }
+        },
+        {
+          "name": "POST /C1_upd_nom_by_nom_id — обновить номенклатуру по ERP id",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Есть в исходном наборе Postman.",
+            "body": { "mode": "raw", "raw": "{\n  \"REF_ID\": [{{refId}}]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_upd_nom_by_nom_id", "host": ["{{baseUrl}}"], "path": ["C1_upd_nom_by_nom_id"] }
+          }
+        },
+        {
+          "name": "POST /C1_set_nom_cnt_by_nom_id — остатки по ERP id",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"NOM\": [{{refId}}]\n}" },
+            "url": { "raw": "{{baseUrl}}/C1_set_nom_cnt_by_nom_id", "host": ["{{baseUrl}}"], "path": ["C1_set_nom_cnt_by_nom_id"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Обратное направление (ERP → 1С)",
+      "item": [
+        {
+          "name": "POST /ERP_NEW_NOM — создать номенклатуру в 1С",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Реализовано частично: создание каталога и единицы измерения отсутствует.",
+            "body": { "mode": "raw", "raw": "{\n  \"REF_ID\": [{{refId}}]\n}" },
+            "url": { "raw": "{{baseUrl}}/ERP_NEW_NOM", "host": ["{{baseUrl}}"], "path": ["ERP_NEW_NOM"] }
+          }
+        },
+        {
+          "name": "POST /ERP_NEW_CATALOG — создать группу в 1С",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "description": "Только ищет существующий GUID; создание не реализовано.",
+            "body": { "mode": "raw", "raw": "{\n  \"REF_ID\": [{{refId}}]\n}" },
+            "url": { "raw": "{{baseUrl}}/ERP_NEW_CATALOG", "host": ["{{baseUrl}}"], "path": ["ERP_NEW_CATALOG"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Выгрузка в 1С:Бухгалтерию (exp2)",
+      "item": [
+        {
+          "name": "GET /exp2/v1/state — доступность источников",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/exp2/v1/state", "host": ["{{baseUrl}}"], "path": ["exp2", "v1", "state"] } }
+        },
+        {
+          "name": "GET /exp2/v1/nomenclature — номенклатура с кодами 1С",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/exp2/v1/nomenclature?limit=100", "host": ["{{baseUrl}}"], "path": ["exp2", "v1", "nomenclature"],
+              "query": [{ "key": "limit", "value": "100" }, { "key": "cursor", "value": "", "disabled": true }] }
+          }
+        },
+        {
+          "name": "GET /exp2/v1/storages — складские единицы",
+          "request": { "method": "GET", "header": [], "url": { "raw": "{{baseUrl}}/exp2/v1/storages", "host": ["{{baseUrl}}"], "path": ["exp2", "v1", "storages"] } }
+        },
+        {
+          "name": "GET /exp2/v1/specifications — спецификации",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/exp2/v1/specifications?limit=200", "host": ["{{baseUrl}}"], "path": ["exp2", "v1", "specifications"],
+              "query": [{ "key": "limit", "value": "200" }, { "key": "cursor", "value": "", "disabled": true }] }
+          }
+        },
+        {
+          "name": "GET /exp2/v1/requirements — расход в производство",
+          "request": {
+            "method": "GET", "header": [],
+            "description": "Требование-накладная: материалы + изделие запуска (субконто «Продукция» на 20.01).",
+            "url": { "raw": "{{baseUrl}}/exp2/v1/requirements", "host": ["{{baseUrl}}"], "path": ["exp2", "v1", "requirements"],
+              "query": [{ "key": "cursor", "value": "", "disabled": true }, { "key": "limit", "value": "500", "disabled": true }] }
+          }
+        },
+        {
+          "name": "GET /exp2/v1/transfers — перемещения",
+          "request": {
+            "method": "GET", "header": [],
+            "url": { "raw": "{{baseUrl}}/exp2/v1/transfers", "host": ["{{baseUrl}}"], "path": ["exp2", "v1", "transfers"],
+              "query": [{ "key": "cursor", "value": "", "disabled": true }, { "key": "limit", "value": "500", "disabled": true }] }
+          }
+        }
+      ]
+    }
+  ]
+}
