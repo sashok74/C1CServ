@@ -6,3 +6,8 @@ build
 test-platform/logs/
 test-platform/reports/
 reports/
+
+# отчёты обследования — содержат пароли
+tools/audit/
+report-*.md
+inventory-*.json
